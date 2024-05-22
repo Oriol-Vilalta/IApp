@@ -2,7 +2,7 @@ from app.app import app
 
 
 def load_ai_modules():
-    from backend.ai.model import load_models
+    from app.ai.model import load_models
     load_models()
 
 

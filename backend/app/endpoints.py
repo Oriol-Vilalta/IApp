@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from backend.ai.model import models, create_model, delete_model, change_name, get_model_by_id
+from .ai.model import models, create_model, delete_model, change_name, get_model_by_id
 
 # This blueprint is the key to the connection between the backend and
 # the React frontend.
@@ -42,3 +42,14 @@ def change_name_of_a_model(id):
         return jsonify(get_model_by_id(id).to_json()), 200
     else:
         return "Model doesn't exists", 401
+
+
+# Procedure to get a model by its id
+@blueprint.route("/<string:id>", methods=['GET'])
+def get_a_model_by_id_endpoint(id):
+    model = get_model_by_id(id)
+    if model:
+        return jsonify(model.to_json()), 200
+    else:
+        return "Model doesn't exists", 401
+

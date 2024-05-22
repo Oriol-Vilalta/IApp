@@ -2,8 +2,7 @@ import React from "react";
 import Card from '@mui/material/Card';
 import './Models.css'
 import {CardActionArea, CardContent, CardMedia, Typography} from "@mui/material";
-import { styled } from '@mui/material/styles';
-import Button from '@mui/material/Button';
+
 
 const ModelList = ({models}) => {
     return <div>
@@ -13,13 +12,13 @@ const ModelList = ({models}) => {
                 // <<Card key={model.id}>
                 //     <p>{model.name}</p>
                 // </Card>
-                <Card sx={{ maxWidth: 300 }}>
+                <Card key={model.id} sx={{ maxWidth: 300 }}>
                     <CardActionArea>
                         <CardMedia
                             component="img"
                             height="140"
-                            image="frontend/src/img.png"
-                            title="diaaa"
+                            image=""
+                            title=""
                         />
                         <CardContent>
                             <Typography gutterBottom variant="h5" component="div">

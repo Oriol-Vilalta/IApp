@@ -1,5 +1,5 @@
-from flask import Blueprint, jsonify, request
-from .ai.model import models, create_model, delete_model, change_name, get_model_by_id
+from flask import Blueprint, jsonify, request, send_file
+from .ai.model import models, create_model, delete_model, change_name, get_model_by_id, upload_model, upload_dataset
 
 # This blueprint is the key to the connection between the backend and
 # the React frontend.
@@ -53,3 +53,35 @@ def get_a_model_by_id_endpoint(id):
     else:
         return "Model doesn't exists", 401
 
+
+# Download a model with the id
+@blueprint.route("/<string:id>/download", methods=['GET'])
+def download_a_model_by_id(id):
+    model = get_model_by_id(id)
+    if model:
+        return send_file(model.compress('zip'), as_attachment=True, download_name=f"{model.name}.zip"), 200
+    else:
+        return "Model doesn't exists", 401
+
+
+# Upload a model with the id
+@blueprint.route("/upload", methods=['POST'])
+def upload_a_model():
+    file = request.files['file']
+    if file:
+        upload_model(file)
+        return "Model uploaded", 201
+    else:
+        return "An error occurred", 401
+
+
+@blueprint.route("/<string:id>/upload_dataset", methods=['POST'])
+def upload_dataset_to_a_model(id):
+    file = request.files['file']
+    if file:
+        if upload_dataset(id, file):
+            return "Model uploaded", 201
+        else:
+            return "Model not found", 401
+    else:
+        return "An error occurred", 401

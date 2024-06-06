@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
-import ModelList from './Models'
 import './App.css'
+import { useState, useEffect } from 'react'
+import ModelList from './MainPage/Models.jsx'
+import Header from './MainPage/Header.jsx'
 
 function App() {
     const [models, setModels] = useState([])
@@ -16,8 +17,11 @@ function App() {
     }, [])
 
     return (
-        <><ModelList models={models}>
-        </ModelList></>
+        <>
+            <Header/>
+            <ModelList models={models}/>
+            {/*<UploadModel/>*/}
+        </>
     )
 }
 

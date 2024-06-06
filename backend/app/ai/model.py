@@ -1,4 +1,6 @@
 from .config import *
+from .utils import uncompress
+from .dataset import ImageDataset
 # from fastai.vision.all import *
 
 import os
@@ -17,7 +19,7 @@ def load_models():
     global models
     print("Loading models...")
     for directory in os.listdir(DATA_DIR):
-        if os.path.isdir(f"{DATA_DIR}/{directory}"):
+        if os.path.isdir(f"{DATA_DIR}/{directory}") and directory != '.tmp':  # Ignore the temporal folder
             models.append(Model.load_model(f"{DATA_DIR}/{directory}"))
     print(f"Loaded {len(models)} models.")
 
@@ -82,14 +84,22 @@ class Model:
 
         # The configuration is the dictionary that will contain every
         # all the data related to the model.
-        if state == "NEW":
+        # TODO Uploaded
+        # if state == "UPLOADED":
+        #     self.config = dict()
+        #
+        #     self.config["name"] = name
+        #     self.config["id"] = id
+        #     self.config["creation_date"] = datetime.datetime.now().strftime("%Y-%m-%d")
+        #
+        #     self.save_config()
+
+        if state == "NEW" or state == "UPLOADED":
             self.config = dict()
 
             self.config["name"] = name
             self.config["id"] = id
             self.config["state"] = state
-            self.config["addr"] = f"{DATA_DIR}/{id}"
-            self.config["config_addr"] = f"{DATA_DIR}/{id}/config.json"
             self.config["creation_date"] = datetime.datetime.now().strftime("%Y-%m-%d")
 
             self.save_config()
@@ -111,14 +121,31 @@ class Model:
         self.config[attr] = value
         self.save_config()
 
+    # Change id is supposed to not be changed. But there is an exception, when
+    # a model is imported there is a chance that the id might be repeated.
+    # so assigning a new id will prevent a repeated id from
+    def change_id(self, new_id):
+        self.id = new_id
+        self.save_config()
+
     # Saves the config file into the config.json
     def save_config(self):
-        with open(self.config["config_addr"], 'w') as config_file:
+        with open(os.path.join(DATA_DIR, self.id, "config.json"), 'w') as config_file:
             json.dump(self.to_json(), config_file, indent=4)
 
     # The to_json() method returns the configuration on an intuitive way.
     def to_json(self):
+        if self.dataset:
+            self.config["dataset"] = self.dataset.to_json()
+            # TODO Acabar codificacio del dataset
         return self.config
+
+    # In order to download a model we will need to transform the model from
+    def compress(self, extension):
+        result = os.path.join(DATA_DIR, ".tmp", self.name.replace(" ", "_"))
+        shutil.make_archive(result, extension, os.path.join(DATA_DIR, self.id))
+
+        return result + "." + extension
 
     # To create a new Model from scratch, the new_model() method has to be used.
     # Generates a unique id and assigns the name to the new Model. It also
@@ -145,21 +172,26 @@ class Model:
 
     # On the other hand, a model can also be created by loading the model
     @staticmethod
-    def load_model(path):
+    def load_model(path, new_id=None):
         try:
             # Load the configuration file
             with open(f"{path}/config.json", "r") as config_file:
                 config = json.load(config_file)
 
             # Create the model
-            model = Model(config['id'], config['name'], config['state'])
+            if new_id:
+                print(f"Uploaded: {new_id}")
+                model = Model(new_id, "UP:" + config['name'], "UPLOADED")
+                # TODO Verify name
+            else:
+                model = Model(config['id'], config['name'], config['state'])
             model.config = config
 
             print(f"Loaded model: id-> {config['id']}; name-> {config['name']}")
             return model
         except FileNotFoundError:
             # The path should always exist
-            print("Path does not exist")
+            print(f"Path does not exist: {path}")
 
 
 # To ease the search of model by id.
@@ -198,7 +230,31 @@ def delete_model(id):
         return False
 
 
-# The changing name feature will allow everyone to go
+# The changing name feature will allow everyone to go.
 def change_name(id, new_name):
     return get_model_by_id(id).change_name(new_name)
 
+
+# Upload a whole dataset into the model.
+def upload_dataset(id, file):
+    model = get_model_by_id(id)
+
+    if model:
+        model.upload_dataset(file)
+    else:
+        return None
+
+
+# A main feature of the application is to be able to upload
+# a model.
+def upload_model(file):
+    # TODO Inacabat
+    compressed_file_addr = os.path.join(DATA_DIR, ".tmp", file.filename)
+    file.save(compressed_file_addr)
+    id = new_id()
+
+    uncompress.uncompress_file(compressed_file_addr, f"{DATA_DIR}/{id}")
+
+    model = Model.load_model(os.path.join(DATA_DIR, id), id)
+    model.change_id(id)  # TODO Improve this
+    models.append(model)

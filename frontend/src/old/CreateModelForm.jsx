@@ -1,6 +1,7 @@
 import {useState} from "react"
+import axios from "axios";
 
-const CreateModelForm = ({ }) => {
+const CreateModelForm = () => {
     const [name, setName] = useState("")
 
     const onSubmit = async (e) => {
@@ -8,9 +9,10 @@ const CreateModelForm = ({ }) => {
         const data = {
             name
         }
-        const url = "http://localhost:5000/models"
+        const url = "http://127.0.0.1:5000/models"
         const options = {
             method: "POST",
+            mode: "cors",
             headers: {
                 "Content-Type": "application/json"
             },
@@ -20,8 +22,6 @@ const CreateModelForm = ({ }) => {
         if (response.status !== 201 && response.status !== 200) {
             const data = await  response.json()
             alert(data.message)
-        } else {
-
         }
     }
 

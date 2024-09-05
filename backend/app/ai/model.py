@@ -1,260 +1,282 @@
-from .config import *
-from .utils import uncompress
-from .dataset import ImageDataset
-# from fastai.vision.all import *
+import os.path
+import zipfile
+from datetime import datetime
+from fastai.vision.all import *
+from .dataset import get_dataset
+from .loader import Loader
+from .learner import PretrainedLearner
+from .config import data_folder
 
-import os
-import json
-import random
-import string
-import shutil
-import datetime
-
-# All the models will be stored here.
-models = []
+models = dict()
 
 
-# Loads every model from the data directory
-def load_models():
-    global models
-    print("Loading models...")
-    for directory in os.listdir(DATA_DIR):
-        if os.path.isdir(f"{DATA_DIR}/{directory}") and directory != '.tmp':  # Ignore the temporal folder
-            models.append(Model.load_model(f"{DATA_DIR}/{directory}"))
-    print(f"Loaded {len(models)} models.")
+def get_model_from_id(id):
+    with open(os.path.join(data_folder, id, 'model.json'), 'r') as file:
+        data = json.load(file)
+
+    model = Model(data['name'], id)
+    # model.path = data['path']
+    model.state = data['state']
+    model.last_accessed = datetime.strptime(data['last_accessed'], '%Y-%m-%d %H:%M:%S')
+
+    dataset_data = data['loader']
+    # model.dataset.path = dataset_data['path']
+    model.loader.item_tfms = dataset_data['item_tfms']
+    model.loader.valid_pct = dataset_data['valid_pct']
+    model.loader.bs = dataset_data['bs']
+    model.loader.seed = dataset_data['seed']
+    model.loader.dataset = get_dataset(dataset_data['dataset_id'])
 
 
-# Generates an unused ID, the ID's len can be modified in the config.py file
-def new_id():
-    tmp = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(ID_LEN)])
+    learner_data = data['learner']
+    model.learner.type = learner_data['type']
+    model.learner.epoch = learner_data['epoch']
+    model.learner.lr = learner_data['lr']
+    model.learner.arch = learner_data['arch']
+    model.learner.training_time = learner_data['training_time']
+    model.learner.learner_exists = learner_data['learner_exists']
+    model.learner.test_accuracy = learner_data['test_accuracy']
+    model.learner.test_loss = learner_data['test_loss']
+    # model.learner.path = learner_data['path']
 
-    # If the ID already exists in the system.
-    # It is almost impossible to get a used ID but if it happens
-    # another will be randomly calculated.
-    for model in models:
-        if model.id == tmp:
-            return new_id()
+    return model
 
+
+def verify_name(new_name):
+    models_lst = list(models.values())
+    for model in models_lst:
+        if new_name == model.name or new_name == "":
+            return False
+
+    return True
+
+
+def generate_model_id():
+    tmp = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(8)])
+    if models.get(tmp) is not None:
+        return generate_model_id()
     return tmp
 
 
-# This will generate the root dir for the model, that way all
-# the information related to the model will be saved in a
-# non-volatile way.
-def generate_file_system(id):
+def load_all_models():
+    for dir in os.listdir(data_folder):
+        models[dir] = get_model_from_id(dir)
+
+
+def get_model(id):
     try:
-        # Creates the directory
-        addr = f"{DATA_DIR}/{id}"
-        os.makedirs(addr)
-
-        # Creates the config.json file and fills it with the default configuration
-        with open(addr + "/config.json", 'w') as config_file:
-            json.dump(DEFAULT_CONFIG, config_file, indent=4)
-
-    except FileExistsError:
-        # This error isn't supposed to be called
-        print(f"Directory {id} already exists")
+        return models[id]
+    except KeyError:
+        return None
 
 
-# Checks if the name entered is already in use
-def verify_name(name, origin):
-    for model in models:
-        if model.name == name and origin != model:
-            return False  # Name already in use
-    return True  # Name not used
-
-
-# The Model will represent an AI model that will contain all
-# the information used throughout its training and the learner.
-class Model:
-
-    # The id will be a permanent value that represents the model.
-    # It is similar to the name but the id will be used for request
-    # purposes and to identify the model's directory.
-    # Like http://localhost:5000/models/U9XQnZRNjz
-
-    # On the other hand, the name can be changed but cannot be repeated,
-    # identifies a more intuitive way. The name should relate to the objective
-    # of the dataset.
-
-    def __init__(self, id, name, state):
-        self.id = id
-        self.name = name
-        self.state = state
-
-        # The configuration is the dictionary that will contain every
-        # all the data related to the model.
-        # TODO Uploaded
-        # if state == "UPLOADED":
-        #     self.config = dict()
-        #
-        #     self.config["name"] = name
-        #     self.config["id"] = id
-        #     self.config["creation_date"] = datetime.datetime.now().strftime("%Y-%m-%d")
-        #
-        #     self.save_config()
-
-        if state == "NEW" or state == "UPLOADED":
-            self.config = dict()
-
-            self.config["name"] = name
-            self.config["id"] = id
-            self.config["state"] = state
-            self.config["creation_date"] = datetime.datetime.now().strftime("%Y-%m-%d")
-
-            self.save_config()
-
-    # For the name changing function we require to verify if the name it's
-    # not repeated, if this condition is fulfilled the name can be changed
-    # successfully. Returns True if it has changed
-    def change_name(self, new_name):
-        if verify_name(new_name, self):
-            self.change_config("name", new_name)
-            return True
-        return False
-
-    # To ease the process of changing the configuration and saving the changes.
-    # All the modifications to the configuration will be made by this function.
-    # This will prevent unsaved configuration to get lost by saving them at the
-    # moment.
-    def change_config(self, attr, value):
-        self.config[attr] = value
-        self.save_config()
-
-    # Change id is supposed to not be changed. But there is an exception, when
-    # a model is imported there is a chance that the id might be repeated.
-    # so assigning a new id will prevent a repeated id from
-    def change_id(self, new_id):
-        self.id = new_id
-        self.save_config()
-
-    # Saves the config file into the config.json
-    def save_config(self):
-        with open(os.path.join(DATA_DIR, self.id, "config.json"), 'w') as config_file:
-            json.dump(self.to_json(), config_file, indent=4)
-
-    # The to_json() method returns the configuration on an intuitive way.
-    def to_json(self):
-        if self.dataset:
-            self.config["dataset"] = self.dataset.to_json()
-            # TODO Acabar codificacio del dataset
-        return self.config
-
-    # In order to download a model we will need to transform the model from
-    def compress(self, extension):
-        result = os.path.join(DATA_DIR, ".tmp", self.name.replace(" ", "_"))
-        shutil.make_archive(result, extension, os.path.join(DATA_DIR, self.id))
-
-        return result + "." + extension
-
-    # To create a new Model from scratch, the new_model() method has to be used.
-    # Generates a unique id and assigns the name to the new Model. It also
-    # creates the file system for the Model.
-
-    # Returns the model if the name isn't used or None if the name is already
-    # in use.
-    @staticmethod
-    def new_model(name):
-        if verify_name(name, None):  # If the name is not used
-            # Creates the variables
-            id, name = new_id(), name
-
-            # Generates the file system
-            generate_file_system(id)
-
-            # Create the model
-            print(f"Created model: id-> {id}; name-> {name}")
-            return Model(id, name, "NEW")
-
-        else:  # If the names are used
-            print(f"Model {name} already exists")
-            return None
-
-    # On the other hand, a model can also be created by loading the model
-    @staticmethod
-    def load_model(path, new_id=None):
-        try:
-            # Load the configuration file
-            with open(f"{path}/config.json", "r") as config_file:
-                config = json.load(config_file)
-
-            # Create the model
-            if new_id:
-                print(f"Uploaded: {new_id}")
-                model = Model(new_id, "UP:" + config['name'], "UPLOADED")
-                # TODO Verify name
-            else:
-                model = Model(config['id'], config['name'], config['state'])
-            model.config = config
-
-            print(f"Loaded model: id-> {config['id']}; name-> {config['name']}")
-            return model
-        except FileNotFoundError:
-            # The path should always exist
-            print(f"Path does not exist: {path}")
-
-
-# To ease the search of model by id.
-def get_model_by_id(id):
-    for model in models:
-        if model.id == id:
-            return model
-
-
-# To create a model just the name is needed, after creation, return
-# the model's data.
 def create_model(name):
-    model = Model.new_model(name)
-    if model:
-        models.append(model)
+
+    if verify_name(name):
+        id = generate_model_id()
+        model = Model(name, id, save_on_create=True)
+        models[id] = model
         return model
     else:
         return None
 
 
-# To delete correctly a model we have to delete the directory and
-# remove it from the model list.
-def delete_model(id):
-    try:
-        shutil.rmtree(f"{DATA_DIR}/{id}")  # Remove the directory
-
-        # Remove the model from the list
-        model = get_model_by_id(id)
-        models.remove(model)
-
-        print(f"Deleted model: {id}")
-        return True
-
-    except FileNotFoundError:
-        print("The directory does not exist")
-        return False
-
-
-# The changing name feature will allow everyone to go.
 def change_name(id, new_name):
-    return get_model_by_id(id).change_name(new_name)
-
-
-# Upload a whole dataset into the model.
-def upload_dataset(id, file):
-    model = get_model_by_id(id)
-
-    if model:
-        model.upload_dataset(file)
+    if verify_name(new_name):
+        model = get_model(id)
+        if model:
+            model.name = new_name
+            model.save()
+            return "Model's name changed", 200
+        else:
+            return "Model not found", 404
     else:
-        return None
+        return "Name already in use", 400
 
 
-# A main feature of the application is to be able to upload
-# a model.
-def upload_model(file):
-    # TODO Inacabat
-    compressed_file_addr = os.path.join(DATA_DIR, ".tmp", file.filename)
-    file.save(compressed_file_addr)
-    id = new_id()
+def upload_model(stream):
+    id = generate_model_id()
+    path = os.path.join(data_folder, id)
+    os.makedirs(path, exist_ok=True)
 
-    uncompress.uncompress_file(compressed_file_addr, f"{DATA_DIR}/{id}")
+    it = 0
+    mod = ""
 
-    model = Model.load_model(os.path.join(DATA_DIR, id), id)
-    model.change_id(id)  # TODO Improve this
-    models.append(model)
+    with zipfile.ZipFile(stream, 'r') as zf:
+        zf.extractall(path)
+        with open(os.path.join(data_folder, id, 'model.json'), 'r') as file:
+            name = json.load(file)['name']
+        while not verify_name(name + mod):
+            it += 1
+            mod = f" ({it})"
+
+        models[id] = get_model_from_id(id)
+        models[id].name = name + mod
+        models[id].save()
+
+
+class Model:
+    def __init__(self, name, id, save_on_create=False):
+        self.name = name
+        self.id = id
+        self.state = "NEW"
+
+        self.path = os.path.join(data_folder, self.id)
+        os.makedirs(self.path, exist_ok=True)
+
+        self.loader = Loader()
+        self.learner = PretrainedLearner(self.loader, self.path)
+
+        self.last_accessed = datetime.now()
+
+        if save_on_create:
+            self.save()
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "state": self.state,
+            "loader": self.loader.to_dict(),
+            "learner": self.learner.to_dict(),
+            "last_accessed": self.last_accessed.strftime('%Y-%m-%d %H:%M:%S')
+        }
+
+    def get_data(self):
+        self.last_accessed = datetime.now()
+        self.save()
+        return self.to_dict()
+
+    def save(self):
+        self.last_accessed = datetime.now()
+        json.dump(self.to_dict(), open(os.path.join(self.path, "model.json"), "w"), indent=4)
+
+    def compress(self):
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for root, dirs, files in os.walk(self.path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    zip_file.write(file_path, os.path.relpath(file_path, self.path))
+        return zip_buffer.getvalue()
+
+    def assign_dataset(self, id):
+        res = self.loader.assign_dataset(id)
+        self.state = "DATASET"
+        self.save()
+        return res
+
+    def train(self):
+        if self.state == "DATASET":
+            self.state = "IN_TRAINING"
+            self.learner.train()
+            if self.state == "IN_TRAINING":
+                self.state = "TRAINED"
+
+        elif self.state == "NEW":
+            return "Dataset not loaded yet. Load data to start training."
+        elif self.state == "TRAINED":
+            return "Model already trained."
+        self.save()
+
+
+    def test(self):
+        if self.state == "TRAINED" and self.loader.has_test():
+            self.learner.test()
+            self.save()
+            return self.learner.test_accuracy, self.learner.test_loss
+        elif self.state == "NEW":
+            return "Dataset not loaded yet. Load data to start testing."
+        elif self.state == "DATASET":
+            return "Model not trained yet. Train the model."
+        elif not self.loader.has_test():
+            return "The model doesn't have a test set."
+        else:
+            return "UNKNOWN STATE"
+        self.save()
+
+    def generate_confusion_matrix(self):
+        if self.state == "TRAINED":
+            interp = ClassificationInterpretation.from_learner(self.learner.learner)
+            interp.plot_confusion_matrix(figsize=(7, 7), dpi=80)
+
+    def predict(self, img, prob_graph=False, cam=False, grad_cam=False):
+        if self.state == "TRAINED":
+            return self.learner.predict(img, prob_graph, cam, grad_cam, self.path)
+        else:
+            return "Model isn't ready to predict"
+
+    def get_probabilities(self, img):
+        if self.state == "TRAINED":
+            return self.learner.predict(img)[2]
+        else:
+            return "Model isn't ready to predict"
+
+    def get_training_results(self):
+        with open(os.path.join(self.path, "results.json"), 'r') as f:
+            return json.load(f)
+
+    def change_learner_property(self, prop, value):
+        changed = False
+        if prop == "epoch" and isinstance(value, int):
+            self.learner.epoch = value
+            changed = True
+        elif prop == "lr" and isinstance(value, float):
+            self.learner.lr = value
+            changed = True
+        elif prop == "arch" and isinstance(value, str):
+            self.learner.arch = value
+            changed = True
+
+        if changed:
+            if self.state == "TRAINED" or self.state == "IN_TRAINING":
+                self.state = "DATASET"
+        self.save()
+        return changed
+
+    def change_loader_property(self, prop, value):
+        changed = False
+
+        if prop == "seed" and isinstance(value, int):
+            self.loader.seed = value
+            changed = True
+        elif prop == "valid_pct" and isinstance(value, float):
+            self.loader.valid_pct = value
+            changed = True
+        elif prop == "item_tfms" and isinstance(value, dict):
+            self.loader.item_tfms = value
+            changed = True
+        elif prop == "bs" and isinstance(value, int):
+            self.loader.bs = value
+            changed = True
+
+        if changed:
+            if self.state == "TRAINED" or self.state == "IN_TRAINING":
+                self.state = "DATASET"
+            self.loader.modified = True
+        self.save()
+        return changed
+
+    def remove_model(self):
+        shutil.rmtree(self.path)
+        models.pop(self.id)
+
+    def remove_learner(self):
+        if os.path.exists(os.path.join(self.path, "model.pkl")):
+            os.remove(os.path.join(self.path, "model.pkl"))
+        if os.path.exists(os.path.join(self.path, "heatmap.png")):
+            os.remove(os.path.join(self.path, "model.png"))
+        if os.path.exists(os.path.join(self.path, "grad-cam.png")):
+            os.remove(os.path.join(self.path, "grad-cam.png"))
+        if os.path.exists(os.path.join(self.path, "prob_graph.png")):
+            os.remove(os.path.join(self.path, "prob_graph.png"))
+        if os.path.exists(os.path.join(self.path, "results.json")):
+            os.remove(os.path.join(self.path, "results.json"))
+
+        self.state = "DATASET"
+        self.learner = PretrainedLearner(self.loader, self.path)
+        self.save()
+
+    def remove_dataset(self):
+        if os.path.exists(os.path.join(data_folder, self.id, "model.pkl")):
+            os.remove(os.path.join(data_folder, self.id, "model.pkl"))

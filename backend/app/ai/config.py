@@ -1,9 +1,9 @@
-DATA_DIR = "C:/Users/orivi/Desktop/Nununana/.data"
+import os
 
-DEFAULT_CONFIG = {
-    'state': 'NEW',
-    'desc': '',
-}
+current_directory = os.path.dirname(os.path.abspath(__file__))
+ai_directory = os.path.dirname(current_directory)
+main_dir = os.path.dirname(ai_directory)
 
-ID_LEN = 10
-
+data_folder = main_dir + r"\.data\models"
+dataset_folder = main_dir + r"\.data\dataset"
+root = main_dir + r"\.data"

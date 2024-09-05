@@ -5,7 +5,7 @@ def is_cat(x):
     return x[0].isupper()
 
 def main():
-    path = "C:/Users/orivi/Desktop/Nununana/.data/datafolder/dataset/oxford-iiit-pet/images"
+    path = "/backend/.data/datafolder/dataset/oxford-iiit-pet/images"
     print(path)
 
     dls = ImageDataLoaders.from_name_func(

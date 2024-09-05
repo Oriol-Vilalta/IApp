@@ -1,27 +1,48 @@
 import './App.css'
-import { useState, useEffect } from 'react'
-import ModelList from './MainPage/Models.jsx'
-import Header from './MainPage/Header.jsx'
+import ModelsMainPage from "./ModelsMainPage/ModelsMainPage.jsx";
+import React, {useState} from "react";
+import {Button} from "@mui/material";
+import './NavBar/navbar.css'
+import DatasetsMainPage from "./DatasetsMainPage/DatasetsMainPage.jsx";
+
 
 function App() {
-    const [models, setModels] = useState([])
+    const [mode, setMode] = useState("models");
 
-    const fetchModels = async () => {
-        const response = await fetch("http://localhost:5000/models")
-        const data = await response.json()
-        setModels(data.models)
+    function changeToDatasets() {
+        setMode("datasets");
     }
 
-    useEffect(() => {
-        fetchModels()
-    }, [])
+    function changeToModels() {
+        setMode("models");
+    }
+
+
 
     return (
-        <>
-            <Header/>
-            <ModelList models={models}/>
-            {/*<UploadModel/>*/}
-        </>
+            <>
+                <ul className={"classUl"}>
+                    <li className={"classLi"}>
+                        <Button className={"classLiA"} onClick={changeToModels} sx={"color: white"}>
+                            Models
+                        </Button>
+                    </li>
+                    <li className={"classLi"}>
+                        <Button className={"classLiA"} onClick={changeToDatasets} sx={"color: white"}>
+                            Datasets
+                        </Button>
+                    </li>
+                </ul>
+
+
+                {mode === "models" &&
+                    <ModelsMainPage/>
+                }
+                { mode === "datasets" &&
+                    <DatasetsMainPage/>
+                }
+                {/*<ModelsMainPage/>*/}
+            </>
     )
 }
 

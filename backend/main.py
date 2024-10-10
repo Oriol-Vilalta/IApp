@@ -15,4 +15,4 @@ def load_ai_modules():
 
 if __name__ == "__main__":
     load_ai_modules()
-    app.run(debug=True)
+    app.run(debug=False)

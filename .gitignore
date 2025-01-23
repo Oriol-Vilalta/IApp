@@ -4,3 +4,5 @@ backend/.data
 */.mypy_cache/*
 */.tox/*
 old-frontend-src/
+.venv/
+.conda/

@@ -3,3 +3,4 @@ backend/.data
 */.pytest_cache/*
 */.mypy_cache/*
 */.tox/*
+old-frontend-src/

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, send_file, Response
-from .ai.dataset import *
+from ..ai.dataset import *
 from flask_cors import cross_origin, CORS
 
 dataset_bp = Blueprint('datasets', __name__)

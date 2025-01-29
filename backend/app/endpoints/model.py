@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, send_file, Response
-from .ai.model import *
+from ..ai.model import *
 from flask_cors import CORS, cross_origin
 
 models_bp = Blueprint('models', __name__)

@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS  
-from .modelEndpoints import models_bp  
-from .datasetEndpoints import dataset_bp  
+from .endpoints.model import models_bp  
+from .endpoints.dataset import dataset_bp  
 
 """
 This module initializes and configures the Flask application for the IApp-Tmp backend.

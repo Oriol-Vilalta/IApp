@@ -1,11 +1,17 @@
 from flask import Flask
-from .modelEndpoints import models_bp
-from flask_cors import CORS
-from .datasetEndpoints import dataset_bp
+from flask_cors import CORS  
+from .modelEndpoints import models_bp  
+from .datasetEndpoints import dataset_bp  
 
-app = Flask(__name__)
-# CORS(app, resources={r"/*": {"origins": "*"}})
+"""
+This module initializes and configures the Flask application for the IApp-Tmp backend.
+It sets up the necessary blueprints for handling model and dataset related endpoints,
+and optionally enables Cross-Origin Resource Sharing (CORS) for the application.
+To run the application, execute this module directly or use a WSGI server.
+"""
 
+app = Flask(__name__)  # Creating a Flask application instance
 
+# Registering the blueprints with the Flask application
 app.register_blueprint(models_bp)
 app.register_blueprint(dataset_bp)

@@ -1,5 +1,6 @@
 import os.path
 import zipfile
+import logging
 from datetime import datetime
 from fastai.vision.all import *
 from .dataset import get_dataset
@@ -57,10 +58,17 @@ def generate_model_id():
         return generate_model_id()
     return tmp
 
-
+# START
+# Load model data
 def load_all_models():
+    logging.info("Loading Models...")
+    total_models = 0
+
     for dir in os.listdir(data_folder):
         models[dir] = get_model_from_id(dir)
+        logging.info("-\tModel: " + models[dir].name)
+
+    logging.info("Loaded " + str(total_models) + " models.")
 
 
 def get_model(id):

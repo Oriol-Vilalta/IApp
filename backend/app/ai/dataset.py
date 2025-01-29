@@ -5,6 +5,7 @@ import shutil
 import string
 import zipfile
 import random
+import logging
 from .config import dataset_folder
 
 datasets = dict()
@@ -36,10 +37,19 @@ def get_dataset(id):
     except KeyError:
         return None
 
-
+# START
+# Load dataset data
 def load_all_datasets():
+    logging.info("Loading Datasets...")
+    total_datasets = 0
+
+    # Run through the datasets folder
     for dir in os.listdir(dataset_folder):
         datasets[dir] = get_dataset_by_id(dir)
+        logging.info("-\tDataset: " + datasets[dir].name)
+        total_datasets += 1
+
+    logging.info("Loaded " + str(total_datasets) + " datasets.") 
 
 
 def generate_dataset_id():

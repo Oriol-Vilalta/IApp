@@ -1,8 +1,9 @@
 backend/.data
-*/__pycache__/*
+__pycache__/
 */.pytest_cache/*
 */.mypy_cache/*
 */.tox/*
 old-frontend-src/
 .venv/
 .conda/
+*.log

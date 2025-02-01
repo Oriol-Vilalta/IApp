@@ -1,6 +1,6 @@
 from fastai.vision.all import *
 from datetime import datetime
-from .config import data_folder
+from .config import MODLES_PATH
 from .visualitzer import grad_cam, heatmap_cam, get_prob_graph
 
 

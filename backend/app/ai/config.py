@@ -1,9 +1,28 @@
 import os
+import logging
 
-current_directory = os.path.dirname(os.path.abspath(__file__))
-ai_directory = os.path.dirname(current_directory)
-main_dir = os.path.dirname(ai_directory)
+dir = os.path.dirname(os.path.abspath(__file__))
+dir = os.path.dirname(dir)
+dir = os.path.dirname(dir)
 
-data_folder = os.path.join(main_dir, ".data", "models")
-dataset_folder = os.path.join(main_dir, ".data", "dataset")
-root = os.path.join(main_dir, ".data")
+# Define the path for storing models
+MODLES_PATH = os.path.join(dir, ".data", "models")
+
+# Define the path for storing datasets
+DATASET_PATH = os.path.join(dir, ".data", "dataset")
+
+
+# Creates the required directories before app execution.
+def initialize_directories():
+
+    try:
+        os.makedirs(MODLES_PATH)
+        logging.info("Directory " + MODLES_PATH + " created successfully.")
+    except FileExistsError:
+        pass
+
+    try:
+        os.makedirs(DATASET_PATH)
+        logging.info("Directory " + MODLES_PATH + " created successfully.")
+    except FileExistsError:
+        pass

@@ -2,21 +2,13 @@ from app.app import app
 from app.ai.config import initialize_directories
 from app.ai.model import load_all_models
 from app.ai.dataset import load_all_datasets
-import os, logging
+from app.utils.logger import logger
 
 """
 This module sets up the necessary directories, loads AI models and datasets, 
 and runs the application. It includes procedures needed to be executed before 
 the application starts.
 """
-
-# CONFIGURE CONFIGURATION
-
-# CONFIGURE LOGGING
-logging.basicConfig(filename="app.ini", level=logging.INFO, filemode="w",
-                    format="[%(asctime)s] %(module)s\t- %(levelname)s: %(message)s",
-                    datefmt="%H:%M:%S")
-
 
 # Loads all AI models and datasets.
 def load_ai_modules():
@@ -26,7 +18,7 @@ def load_ai_modules():
 
 if __name__ == "__main__":
     # Log the start of the application
-    logging.info("Starting Application...")
+    logger.info("Starting Application...")
 
     # Set up necessary directories for models and datasets
     initialize_directories()

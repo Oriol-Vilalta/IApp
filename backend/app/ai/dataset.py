@@ -5,7 +5,7 @@ import shutil
 import string
 import zipfile
 import random
-import logging
+from ..utils.logger import logger
 from .config import DATASET_PATH
 
 datasets = dict()
@@ -40,16 +40,16 @@ def get_dataset(id):
 # START
 # Load dataset data
 def load_all_datasets():
-    logging.info("Loading Datasets...")
+    logger.info("Loading Datasets...")
     total_datasets = 0
 
     # Run through the datasets folder
     for dir in os.listdir(DATASET_PATH):
         datasets[dir] = get_dataset_by_id(dir)
-        logging.info("-\tDataset: " + datasets[dir].name)
+        logger.info("-\tDataset: " + datasets[dir].name)
         total_datasets += 1
 
-    logging.info("Loaded " + str(total_datasets) + " datasets.") 
+    logger.info("Loaded " + str(total_datasets) + " datasets.") 
 
 
 def generate_dataset_id():

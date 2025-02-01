@@ -1,8 +1,8 @@
 import os.path
 import zipfile
-import logging
 from datetime import datetime
 from fastai.vision.all import *
+from ..utils.logger import logger
 from .dataset import get_dataset
 from .loader import Loader
 from .learner import PretrainedLearner
@@ -61,14 +61,14 @@ def generate_model_id():
 # START
 # Load model data
 def load_all_models():
-    logging.info("Loading Models...")
+    logger.info("Loading Models...")
     total_models = 0
 
     for dir in os.listdir(MODLES_PATH):
         models[dir] = get_model_from_id(dir)
-        logging.info("-\tModel: " + models[dir].name)
+        logger.info("-\tModel: " + models[dir].name)
 
-    logging.info("Loaded " + str(total_models) + " models.")
+    logger.info("Loaded " + str(total_models) + " models.")
 
 
 def get_model(id):

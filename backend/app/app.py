@@ -1,9 +1,8 @@
 import logging
 
 from flask import Flask
-from flask_cors import CORS  
-from .endpoints.model import models_bp  
-from .endpoints.dataset import dataset_bp
+from .endpoints.model import blueprint as model_bp  
+from .endpoints.dataset import blueprint as dataset_bp
 
 """
 This module initializes and configures the Flask application for the IApp-Tmp backend.
@@ -27,5 +26,5 @@ app.logger.addHandler(handler)
 logging.getLogger('werkzeug').addHandler(handler)
 
 # Registering the blueprints with the Flask application
-app.register_blueprint(models_bp)
+app.register_blueprint(model_bp)
 app.register_blueprint(dataset_bp)

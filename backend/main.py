@@ -27,4 +27,4 @@ if __name__ == "__main__":
     load_ai_modules()
 
     # Run the application
-    app.run(debug=False)
+    app.run(debug=True)

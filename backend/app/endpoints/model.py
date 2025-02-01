@@ -1,19 +1,19 @@
 from flask import Blueprint, jsonify, request, send_file, Response
 from ..ai.model import *
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 
-models_bp = Blueprint('models', __name__)
-CORS(models_bp)
+blueprint = Blueprint('models', __name__)
+CORS(blueprint)
 
 
-@models_bp.route('/models', methods=['GET'])
+@blueprint.route('/models', methods=['GET'])
 def get_models():
     model_json = list(map(lambda model: model.to_dict(), list(models.values())))
     res = jsonify({'models': model_json})
     return res, 200
 
 
-@models_bp.route('/models/<string:id>', methods=['GET'])
+@blueprint.route('/models/<string:id>', methods=['GET'])
 def get_model_with_id(id):
     model = get_model(id)
     if model:
@@ -22,7 +22,7 @@ def get_model_with_id(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 
-@models_bp.route('/models', methods=['POST'])
+@blueprint.route('/models', methods=['POST'])
 def create_model_by_name():
     model_name = request.json['name']
     model = create_model(model_name)
@@ -32,7 +32,7 @@ def create_model_by_name():
         return jsonify({'error': f'Model {model_name} already exists'}), 400
 
 
-@models_bp.route('/models/<string:id>', methods=['DELETE'])
+@blueprint.route('/models/<string:id>', methods=['DELETE'])
 def delete_model_by_id(id):
     model = get_model(id)
     if model:
@@ -42,7 +42,7 @@ def delete_model_by_id(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 
-@models_bp.route('/models/<string:id>/change_name', methods=['PUT'])
+@blueprint.route('/models/<string:id>/change_name', methods=['PUT'])
 def update_model_by_id(id):
     message, code = change_name(id, request.args['name'])
     if code == 200:
@@ -51,7 +51,7 @@ def update_model_by_id(id):
         return jsonify({'error': message}), code
 
 
-@models_bp.route('/models/<string:id>/download', methods=['GET'])
+@blueprint.route('/models/<string:id>/download', methods=['GET'])
 def download_by_id(id):
     model = get_model(id)
     if model:
@@ -62,7 +62,7 @@ def download_by_id(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 
-@models_bp.route('/models/upload', methods=['POST'])
+@blueprint.route('/models/upload', methods=['POST'])
 def upload_new_model():
     try:
         file = request.files['file']
@@ -75,7 +75,7 @@ def upload_new_model():
         return jsonify({'error': 'File is not uploaded'}), 400
 
 
-@models_bp.route('/models/<string:id>/dataset', methods=['PUT'])
+@blueprint.route('/models/<string:id>/dataset', methods=['PUT'])
 def assign_a_dataset_to_a_model(id):
     model = get_model(id)
     if model:
@@ -87,7 +87,7 @@ def assign_a_dataset_to_a_model(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 
-@models_bp.route('/models/<string:id>/dataset', methods=['PUT'])
+@blueprint.route('/models/<string:id>/dataset', methods=['PUT'])
 def assign_a_dataset(id):
     model = get_model(id)
     if model:
@@ -99,7 +99,7 @@ def assign_a_dataset(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 
-@models_bp.route('/models/<string:id>/train', methods=['PUT'])
+@blueprint.route('/models/<string:id>/train', methods=['PUT'])
 def train_a_model_(id):
     model = get_model(id)
     if model:
@@ -114,7 +114,7 @@ def train_a_model_(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 
-@models_bp.route('/models/<string:id>/test', methods=['PUT'])
+@blueprint.route('/models/<string:id>/test', methods=['PUT'])
 def test_a_model(id):
     model = get_model(id)
     if model:
@@ -127,7 +127,7 @@ def test_a_model(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 
-@models_bp.route('/models/<string:id>/predict', methods=['POST'])
+@blueprint.route('/models/<string:id>/predict', methods=['POST'])
 def predict_an_image(id):
     model = get_model(id)
     if model and request.files['file']:
@@ -146,7 +146,7 @@ def predict_an_image(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 
-@models_bp.route('/models/<string:id>/results', methods=['GET'])
+@blueprint.route('/models/<string:id>/results', methods=['GET'])
 def get_training_results(id):
     model = get_model(id)
     if model:
@@ -156,7 +156,7 @@ def get_training_results(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 
-@models_bp.route('/models/<string:id>/heatmap', methods=['GET'])
+@blueprint.route('/models/<string:id>/heatmap', methods=['GET'])
 def get_the_heatmap(id):
     model = get_model(id)
     if model:
@@ -165,7 +165,7 @@ def get_the_heatmap(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 
-@models_bp.route('/models/<string:id>/grad_cam', methods=['GET'])
+@blueprint.route('/models/<string:id>/grad_cam', methods=['GET'])
 def get_the_grad_cam(id):
     model = get_model(id)
     if model:
@@ -177,7 +177,7 @@ def get_the_grad_cam(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 
-@models_bp.route('/models/<string:id>/prob_graph', methods=['GET'])
+@blueprint.route('/models/<string:id>/prob_graph', methods=['GET'])
 def get_the_prob_graph(id):
     model = get_model(id)
     if model:
@@ -186,7 +186,7 @@ def get_the_prob_graph(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 
-@models_bp.route('/models/<string:id>/change_loader_property', methods=['PUT'])
+@blueprint.route('/models/<string:id>/change_loader_property', methods=['PUT'])
 def change_a_loader_property(id):
     model = get_model(id)
     if model:
@@ -197,7 +197,7 @@ def change_a_loader_property(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 
-@models_bp.route('/models/<string:id>/change_learner_property', methods=['PUT'])
+@blueprint.route('/models/<string:id>/change_learner_property', methods=['PUT'])
 def change_a_learner_property(id):
     model = get_model(id)
     if model:

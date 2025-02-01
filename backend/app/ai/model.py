@@ -6,13 +6,13 @@ from ..utils.logger import logger
 from .dataset import get_dataset
 from .loader import Loader
 from .learner import PretrainedLearner
-from .config import MODLES_PATH
+from .config import MODELS_PATH
 
 models = dict()
 
 
 def get_model_from_id(id):
-    with open(os.path.join(MODLES_PATH, id, 'model.json'), 'r') as file:
+    with open(os.path.join(MODELS_PATH, id, 'model.json'), 'r') as file:
         data = json.load(file)
 
     model = Model(data['name'], id)
@@ -64,7 +64,7 @@ def load_all_models():
     logger.info("Loading Models...")
     total_models = 0
 
-    for dir in os.listdir(MODLES_PATH):
+    for dir in os.listdir(MODELS_PATH):
         models[dir] = get_model_from_id(dir)
         logger.info("-\tModel: " + models[dir].name)
 
@@ -104,7 +104,7 @@ def change_name(id, new_name):
 
 def upload_model(stream):
     id = generate_model_id()
-    path = os.path.join(MODLES_PATH, id)
+    path = os.path.join(MODELS_PATH, id)
     os.makedirs(path, exist_ok=True)
 
     it = 0
@@ -112,7 +112,7 @@ def upload_model(stream):
 
     with zipfile.ZipFile(stream, 'r') as zf:
         zf.extractall(path)
-        with open(os.path.join(MODLES_PATH, id, 'model.json'), 'r') as file:
+        with open(os.path.join(MODELS_PATH, id, 'model.json'), 'r') as file:
             name = json.load(file)['name']
         while not verify_name(name + mod):
             it += 1
@@ -129,7 +129,7 @@ class Model:
         self.id = id
         self.state = "NEW"
 
-        self.path = os.path.join(MODLES_PATH, self.id)
+        self.path = os.path.join(MODELS_PATH, self.id)
         os.makedirs(self.path, exist_ok=True)
 
         self.loader = Loader()
@@ -286,5 +286,5 @@ class Model:
         self.save()
 
     def remove_dataset(self):
-        if os.path.exists(os.path.join(MODLES_PATH, self.id, "model.pkl")):
-            os.remove(os.path.join(MODLES_PATH, self.id, "model.pkl"))
+        if os.path.exists(os.path.join(MODELS_PATH, self.id, "model.pkl")):
+            os.remove(os.path.join(MODELS_PATH, self.id, "model.pkl"))

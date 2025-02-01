@@ -6,7 +6,7 @@ from ..utils.logger import logger
 from .dataset import get_dataset
 from .loader import Loader
 from .learner import PretrainedLearner
-from .config import MODELS_PATH
+from ..utils.config import MODELS_PATH
 
 models = dict()
 

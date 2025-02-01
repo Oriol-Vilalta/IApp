@@ -1,5 +1,5 @@
 from app.app import app
-from app.ai.config import initialize_directories
+from app.utils.config import initialize_directories
 from app.ai.model import load_all_models
 from app.ai.dataset import load_all_datasets
 from app.utils.logger import logger

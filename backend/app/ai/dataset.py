@@ -6,7 +6,7 @@ import string
 import zipfile
 import random
 from ..utils.logger import logger
-from .config import DATASET_PATH
+from ..utils.config import DATASET_PATH
 
 datasets = dict()
 

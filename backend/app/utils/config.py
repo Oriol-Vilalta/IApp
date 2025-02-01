@@ -1,4 +1,4 @@
-from ..utils.logger import logger
+from .logger import logger
 import os
 
 dir = os.path.dirname(os.path.abspath(__file__))

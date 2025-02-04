@@ -6,43 +6,63 @@ from ..utils.logger import logger
 blueprint = Blueprint('datasets', __name__)
 CORS(blueprint)
 
-
+# Retreives all of the datasets information.
+# Used when a page will need to visualize all the datasets, like the main page of the datasets.
 @blueprint.route('/datasets', methods=['GET'])
 def get_datasets():
-    datasets = list(map(lambda dataset: dataset.to_dict(), list(datasets.values())))
-    logger.info(f"{request.path}: Retrieved {len(datasets)} datasets")
-    return jsonify({"datasets": datasets}), 200
+    response = list(map(lambda dataset: dataset.to_dict(), list(datasets.values())))
+    logger.debug(f"{request.path}: Retrieved {len(response)} datasets")
+    return jsonify({"datasets": response}), 200
 
 
+# Retrieves the information of just one dataset by the id.
+# Used when viewing a dataset page.
 @blueprint.route('/datasets/<string:id>', methods=['GET'])
 def get_dataset_with_id(id):
     dataset = get_dataset(id)
     if dataset:
+        logger.debug(f"{request.path}: Retreived dataset successfully.")
         return jsonify(dataset.to_dict()), 200
     else:
+        logger.error(f"{request.path}: Dataset doesn't exist.")
         return jsonify({"error": "Dataset not found"}), 404
 
 
+# Creates a new blank dataset with a specific name
+# If a dataset with the same name already exists, it won't be created.
 @blueprint.route('/datasets', methods=['POST'])
 def create_dataset_by_name():
     name = request.json['name']
     dataset = create_dataset(name)
     if dataset:
+        logger.debug(f"Dataset created successfully. ID: {dataset.id}")
         return jsonify(dataset.to_dict()), 201
     else:
+        logger.error(f"There's already a dataset with this name.")
         return jsonify({"error": "Name already exists"}), 400
 
-
-@blueprint.route('/datasets/<string:id>/upload_train', methods=['POST'])
+# Upload training dataset.
+@blueprint.route('/datasets/<string:id>/upload/train', methods=['POST'])
 def upload_train_data(id):
-    file = request.files['file']
-    if file.filename.endswith('.zip'):
-        if upload_train_label(id, file.stream):
-            return jsonify({"message": "Data uploaded successfully"}), 200
-        else:
-            return jsonify({"error": "Dataset not found"}), 404
-    else:
+
+    # Check if a file has been uploaded
+    try:
+        file = request.files['file']
+    except KeyError:
+        return jsonify({"error": "No 'file' parameter found!"}), 400
+    
+    if file.filename == '':
+        return jsonify({"error": "No file has been uploaded"}), 400
+
+    # If data it's not a zip folder cannot be unzipped.
+    if not file.filename.endswith('.zip'):
+        print(os.path.splitext(file))
         return jsonify({"error": "File type not supported"}), 400
+
+    if upload_train_label(id, file.stream):
+        return jsonify({"message": "Data uploaded successfully"}), 200
+    else:
+        return jsonify({"error": "Dataset not found"}), 404
 
 
 @blueprint.route('/datasets/<string:id>/upload_test', methods=['POST'])

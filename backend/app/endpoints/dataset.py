@@ -80,8 +80,10 @@ def upload_train_data(id):
         return jsonify({"error": "File type not supported"}), 400
 
     if upload_train_label(id, file.stream):
+        logger.debug(f"{request.path}: Uploaded Train Data")
         return jsonify({"message": "Data uploaded successfully"}), 200
     else:
+        logger.error(f"{request.path}: Uploaded Train Data")
         return jsonify({"error": "Dataset not found"}), 404
 
 
@@ -104,6 +106,7 @@ def upload_test_data(id):
         return jsonify({"error": "File type not supported"}), 400
 
     if upload_test_label(id, file.stream):
+        logger.debug(f"{request.path}: Uploaded Test Data")
         return jsonify({"message": "Data uploaded successfully"}), 200
     else:
         return jsonify({"error": "Dataset not found"}), 404
@@ -131,6 +134,7 @@ def upload_dataset_full_dataset():
         return jsonify({"error": "File type not supported"}), 400
 
     if file.filename.endswith('.zip'):
+        logger.debug(f"{request.path}: Uploaded dataset")
         upload_dataset(file.stream)
         return jsonify({"message": "Data uploaded successfully"}), 200
     else:
@@ -153,7 +157,7 @@ def download_a_dataset(id):
 #
 
 # Remove all training.
-@blueprint.route('/datasets/<string:id>/delete_train', methods=['DELETE'])
+@blueprint.route('/datasets/<string:id>/delete/train', methods=['DELETE'])
 def delete_train_data_from_dataset(id):
     if delete_train(id):
         return jsonify({"message": "Train data deleted successfully"}), 200
@@ -161,7 +165,7 @@ def delete_train_data_from_dataset(id):
         return jsonify({"error": "Dataset not found"}), 404
 
 # Remove all testing.
-@blueprint.route('/datasets/<string:id>/delete_test', methods=['DELETE'])
+@blueprint.route('/datasets/<string:id>/delete/test', methods=['DELETE'])
 def delete_test_data_from_dataset(id):
     if delete_test(id):
         return jsonify({"message": "Test data deleted successfully"}), 200
@@ -169,10 +173,11 @@ def delete_test_data_from_dataset(id):
         return jsonify({"error": "Dataset not found"}), 404
 
 # Remove a specific category/label
-@blueprint.route('/datasets/<string:id>/delete_label', methods=['DELETE'])
+@blueprint.route('/datasets/<string:id>/delete/label', methods=['DELETE'])
 def update_train_data(id):
-    label = request.json['label']
+    label = request.args.get('name')
     if delete_label(id, label):
+        logger.debug()
         return jsonify({"message": f"{label} deleted successfully"}), 200
     else:
         return jsonify({"error": "Dataset not found"}), 404
@@ -182,13 +187,11 @@ def update_train_data(id):
 #
 
 # Generates testing dataset using training data
-@blueprint.route('/datasets/<string:id>/generate_test', methods=['PUT'])
+@blueprint.route('/datasets/<string:id>/generate/test', methods=['PUT'])
 def generate_tests_using_training_data(id):
-    test_pct = request.json['test_pct']
+    test_pct = float(request.args.get('percentage'))
     if test_pct < 0 or test_pct > 1:
-        return jsonify({"error": "test_pct must be between 0 and 1"}), 400
+        return jsonify({"error": "The percentage given must be between 0 and 1"}), 400
     mes, code = generate_test(id, test_pct)
     return jsonify({"message": mes}), code
-
-
 

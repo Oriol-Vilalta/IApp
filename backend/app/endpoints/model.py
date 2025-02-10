@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request, send_file, Response
 from flask_cors import CORS
+from werkzeug.exceptions import BadRequestKeyError
 
 from ..ai.model import *
 from ..utils.logger import logger
@@ -195,11 +196,19 @@ def predict_an_image(id):
     file.save(model.path + "/predict.jpg")
     img = PILImage.create(file.stream)
 
+    # Verify type of prediction
+    try:
+        grad_cam = request.args['grad_cam'] == "true"
+    except BadRequestKeyError:
+        grad_cam = False
+
+    try:
+        prob_graph = request.args['prob_graph'] == "true"
+    except BadRequestKeyError:
+        prob_graph = False
+
     # Do prediction and send response
-    res = model.predict(img,
-                        grad_cam=(request.args['grad_cam'] == "true"),
-                        prob_graph=(request.args['prob_graph'] == "true")
-                        )
+    res = model.predict(img, grad_cam=grad_cam, prob_graph=prob_graph)
     logger.debug(f"{request.path}: Prediciton done!")
     return jsonify({'result': res}), 200
 

@@ -98,7 +98,7 @@ def download_by_id(id):
         return jsonify({'error': 'Model does not exist'}), 404
 
 #
-# SET DATASET RELATED PROPERTIES
+# DATASET 
 #
 
 # Set dataset to the model.
@@ -109,7 +109,7 @@ def assign_a_dataset_to_a_model(id):
         logger.error(f"{request.path}: Model doesn't exist")
         return jsonify({'error': 'Model does not exist'}), 404
     
-    if model.assign_dataset(request.json['dataset_id']):
+    if model.assign_dataset(request.json['dataset']):
         logger.debug(f"{request.path}: Dataset assigned successfully.")
         return jsonify({'message': 'Dataset assigned successfully'}), 200
     else:

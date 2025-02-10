@@ -1,10 +1,12 @@
 from flask import Blueprint, jsonify, request, Response
 from flask_cors import CORS
+
 from ..ai.dataset import *
 from ..utils.logger import logger
 
 blueprint = Blueprint('datasets', __name__)
 CORS(blueprint)
+
 
 #
 # CRUD OPERATIONS
@@ -58,7 +60,7 @@ def delete_dataset_by_id(id):
 
 
 #
-# UPLOADING IMAGES
+# UPLOADING DATA
 #
 
 # Upload training data.
@@ -130,15 +132,11 @@ def upload_dataset_full_dataset():
 
     # If data it's not a zip folder cannot be unzipped.
     if not file.filename.endswith('.zip'):
-        print(os.path.splitext(file))
         return jsonify({"error": "File type not supported"}), 400
 
-    if file.filename.endswith('.zip'):
-        logger.debug(f"{request.path}: Uploaded dataset")
-        upload_dataset(file.stream)
-        return jsonify({"message": "Data uploaded successfully"}), 200
-    else:
-        return jsonify({"error": "File type not supported"}), 400
+    logger.debug(f"{request.path}: Uploaded dataset")
+    upload_dataset(file.stream)
+    return jsonify({"message": "Data uploaded successfully"}), 200
 
 
 # Downloads the full dataset (including training and testing).
@@ -148,8 +146,10 @@ def download_a_dataset(id):
     if dataset:
         response = Response(dataset.compress(), content_type='application/zip')
         response.headers['Content-Disposition'] = f'attachment; filename={dataset.name}.zip'
+        logger.debug(f"{request.path}: Dataset downloaded successfully")
         return response, 200
     else:
+        logger.error(f"{request.path}: Dataset doesn't exist.")
         return jsonify({"error": "Dataset not found"}), 404
 
 #

@@ -160,26 +160,33 @@ def download_a_dataset(id):
 @blueprint.route('/datasets/<string:id>/delete/train', methods=['DELETE'])
 def delete_train_data_from_dataset(id):
     if delete_train(id):
+        logger.debug(f"{request.path}: Train data deleted successfully")
         return jsonify({"message": "Train data deleted successfully"}), 200
     else:
+        logger.error(f"{request.path}: Dataset doesn't exist.")
         return jsonify({"error": "Dataset not found"}), 404
+
 
 # Remove all testing.
 @blueprint.route('/datasets/<string:id>/delete/test', methods=['DELETE'])
 def delete_test_data_from_dataset(id):
     if delete_test(id):
+        logger.debug(f"{request.path}: Test data deleted successfully")
         return jsonify({"message": "Test data deleted successfully"}), 200
     else:
+        logger.error(f"{request.path}: Dataset doesn't exist.")
         return jsonify({"error": "Dataset not found"}), 404
+
 
 # Remove a specific category/label
 @blueprint.route('/datasets/<string:id>/delete/label', methods=['DELETE'])
 def update_train_data(id):
     label = request.args.get('name')
     if delete_label(id, label):
-        logger.debug()
+        logger.debug("Label delated successfully")
         return jsonify({"message": f"{label} deleted successfully"}), 200
     else:
+        logger.error(f"{request.path}: Dataset doesn't exist.")
         return jsonify({"error": "Dataset not found"}), 404
 
 #
@@ -189,9 +196,13 @@ def update_train_data(id):
 # Generates testing dataset using training data
 @blueprint.route('/datasets/<string:id>/generate/test', methods=['PUT'])
 def generate_tests_using_training_data(id):
-    test_pct = float(request.args.get('percentage'))
-    if test_pct < 0 or test_pct > 1:
+    pct = float(request.args.get('percentage'))
+
+    # Verify pct is in the correct range
+    if pct < 0 or pct > 1:
         return jsonify({"error": "The percentage given must be between 0 and 1"}), 400
-    mes, code = generate_test(id, test_pct)
+    
+    # Generate tests
+    mes, code = generate_test(id, pct)
     return jsonify({"message": mes}), code
 

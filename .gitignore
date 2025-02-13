@@ -8,4 +8,3 @@ old-frontend-src/
 .conda/
 *.log
 .dataset
-frontend/

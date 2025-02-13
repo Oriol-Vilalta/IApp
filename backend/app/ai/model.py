@@ -1,18 +1,18 @@
 import os.path
 import zipfile
-import logging
 from datetime import datetime
 from fastai.vision.all import *
+from ..utils.logger import logger
 from .dataset import get_dataset
 from .loader import Loader
 from .learner import PretrainedLearner
-from .config import data_folder
+from ..utils.config import MODELS_PATH
 
 models = dict()
 
 
 def get_model_from_id(id):
-    with open(os.path.join(data_folder, id, 'model.json'), 'r') as file:
+    with open(os.path.join(MODELS_PATH, id, 'model.json'), 'r') as file:
         data = json.load(file)
 
     model = Model(data['name'], id)
@@ -61,14 +61,14 @@ def generate_model_id():
 # START
 # Load model data
 def load_all_models():
-    logging.info("Loading Models...")
+    logger.info("Loading Models...")
     total_models = 0
 
-    for dir in os.listdir(data_folder):
+    for dir in os.listdir(MODELS_PATH):
         models[dir] = get_model_from_id(dir)
-        logging.info("-\tModel: " + models[dir].name)
+        logger.info("-\tModel: " + models[dir].name)
 
-    logging.info("Loaded " + str(total_models) + " models.")
+    logger.info("Loaded " + str(total_models) + " models.")
 
 
 def get_model(id):
@@ -104,7 +104,7 @@ def change_name(id, new_name):
 
 def upload_model(stream):
     id = generate_model_id()
-    path = os.path.join(data_folder, id)
+    path = os.path.join(MODELS_PATH, id)
     os.makedirs(path, exist_ok=True)
 
     it = 0
@@ -112,7 +112,7 @@ def upload_model(stream):
 
     with zipfile.ZipFile(stream, 'r') as zf:
         zf.extractall(path)
-        with open(os.path.join(data_folder, id, 'model.json'), 'r') as file:
+        with open(os.path.join(MODELS_PATH, id, 'model.json'), 'r') as file:
             name = json.load(file)['name']
         while not verify_name(name + mod):
             it += 1
@@ -129,7 +129,7 @@ class Model:
         self.id = id
         self.state = "NEW"
 
-        self.path = os.path.join(data_folder, self.id)
+        self.path = os.path.join(MODELS_PATH, self.id)
         os.makedirs(self.path, exist_ok=True)
 
         self.loader = Loader()
@@ -286,5 +286,5 @@ class Model:
         self.save()
 
     def remove_dataset(self):
-        if os.path.exists(os.path.join(data_folder, self.id, "model.pkl")):
-            os.remove(os.path.join(data_folder, self.id, "model.pkl"))
+        if os.path.exists(os.path.join(MODELS_PATH, self.id, "model.pkl")):
+            os.remove(os.path.join(MODELS_PATH, self.id, "model.pkl"))

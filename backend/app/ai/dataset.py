@@ -5,8 +5,8 @@ import shutil
 import string
 import zipfile
 import random
-import logging
-from .config import dataset_folder
+from ..utils.logger import logger
+from ..utils.config import DATASET_PATH
 
 datasets = dict()
 
@@ -20,7 +20,7 @@ def verify_name(new_name):
 
 
 def get_dataset_by_id(id):
-    with open(os.path.join(dataset_folder, id, 'dataset.json'), 'r') as file:
+    with open(os.path.join(DATASET_PATH, id, 'dataset.json'), 'r') as file:
         data = json.load(file)
 
     dataset = Dataset(data['name'], id)
@@ -40,16 +40,16 @@ def get_dataset(id):
 # START
 # Load dataset data
 def load_all_datasets():
-    logging.info("Loading Datasets...")
+    logger.info("Loading Datasets...")
     total_datasets = 0
 
     # Run through the datasets folder
-    for dir in os.listdir(dataset_folder):
+    for dir in os.listdir(DATASET_PATH):
         datasets[dir] = get_dataset_by_id(dir)
-        logging.info("-\tDataset: " + datasets[dir].name)
+        logger.info("-\tDataset: " + datasets[dir].name)
         total_datasets += 1
 
-    logging.info("Loaded " + str(total_datasets) + " datasets.") 
+    logger.info("Loaded " + str(total_datasets) + " datasets.") 
 
 
 def generate_dataset_id():
@@ -70,7 +70,7 @@ def create_dataset(name):
 
 def upload_dataset(stream):
     id = generate_dataset_id()
-    path = os.path.join(dataset_folder, id)
+    path = os.path.join(DATASET_PATH, id)
     os.makedirs(path)
 
     it = 0
@@ -79,7 +79,7 @@ def upload_dataset(stream):
     with zipfile.ZipFile(stream, 'r') as zip_file:
         zip_file.extractall(path)
 
-        with open(os.path.join(dataset_folder, id, 'dataset.json'), 'r') as file:
+        with open(os.path.join(DATASET_PATH, id, 'dataset.json'), 'r') as file:
             name = json.load(file)['name']
 
         while not verify_name(name + mod):
@@ -154,7 +154,7 @@ class Dataset:
         self.id = id
         self.name = name
         self.has_test = False
-        self.path = os.path.join(dataset_folder, self.id)
+        self.path = os.path.join(DATASET_PATH, self.id)
 
         self.train_vocab = []
         os.makedirs(os.path.join(self.path, "train"), exist_ok=True)
@@ -186,7 +186,7 @@ class Dataset:
             for dir in os.listdir(os.path.join(self.path, "test")):
                 self.test_vocab.append(dir)
 
-        with open(os.path.join(dataset_folder, self.id, "dataset.json"), 'w') as f:
+        with open(os.path.join(DATASET_PATH, self.id, "dataset.json"), 'w') as f:
             json.dump(self.to_dict(), f, indent=4)
 
     def upload_train(self, file):

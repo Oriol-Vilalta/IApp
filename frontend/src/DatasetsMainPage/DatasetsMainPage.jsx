@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import Header from "./Header.jsx";
 import DatasetList from "./Datasets.jsx";
-import Dataset from "./Dataset/Dataset.jsx";
+import Dataset from "../Dataset/Dataset.jsx";
 
 
 

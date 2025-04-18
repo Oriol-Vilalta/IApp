@@ -1,5 +1,5 @@
 import {Alert, Button, TextField} from "@mui/material";
-import DownloadButton from "../../ModelsMainPage/Models/DownloadButton.jsx";
+import DownloadButton from "../ModelsMainPage/Models/DownloadButton.jsx";
 import TrainingData from "./TrainingData.jsx";
 import TestingData from "./TestingData.jsx";
 import React, {useState} from "react";

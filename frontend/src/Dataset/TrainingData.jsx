@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {Box, Button, Chip, List, ListItem, ListItemButton, ListItemText} from "@mui/material";
-import UploadData from "../../ModelsMainPage/UploadData.jsx";
+import UploadData from "../ModelsMainPage/UploadData.jsx";
 import RemoveData from "./RemoveData.jsx";
 
 

@@ -1,4 +1,21 @@
-from fastai.vision.all import *
+from torchvision.models.resnet import resnet18, resnet34, resnet50, resnet101, resnet152
+from torchvision.models.densenet import densenet121, densenet161, densenet169, densenet201
+from torchvision.models.efficientnet import efficientnet_b0, efficientnet_b1, efficientnet_b2, efficientnet_b3, efficientnet_b4, efficientnet_b5, efficientnet_b6, efficientnet_b7
+from torchvision.models.vgg import vgg16, vgg19, vgg16_bn, vgg19_bn
+from torchvision.models.alexnet import alexnet
+from torchvision.models.googlenet import googlenet
+
+from torch.nn.functional import cross_entropy
+
+from fastai.callback.core import Callback
+from fastai.learner import load_learner
+from fastai.data.transforms import get_image_files
+from fastai.vision.learner import vision_learner, accuracy, error_rate
+
+import threading
+import json
+import os
+
 from datetime import datetime
 from ..utils.config import MODELS_PATH
 from .visualitzer import grad_cam, heatmap_cam, get_prob_graph
@@ -71,7 +88,7 @@ def arch_from_str(str):
     elif str.startswith("densenet"):
         return densenet_from_str(str)
     elif str == "googLeNet":
-        return GoogLeNet
+        return googlenet
     elif str.startswith("efficientnet"):
         return efficientnet_from_str(str)
     elif str.startswith("vgg"):
@@ -167,7 +184,7 @@ class PretrainedLearner:
             pred, targ = self.learner.get_preds(dl=test_dl)
 
             self.test_accuracy = accuracy(pred, targ).item()
-            self.test_loss = F.cross_entropy(pred, targ).item()
+            self.test_loss = cross_entropy(pred, targ).item()
         else:
             return None
 

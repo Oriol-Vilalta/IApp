@@ -1,14 +1,25 @@
-import os.path
-import zipfile
-from datetime import datetime
-from fastai.vision.all import *
+from fastai.interpret import ClassificationInterpretation
+
+
 from ..utils.logger import logger
 from .dataset import get_dataset
 from .loader import Loader
 from .learner import PretrainedLearner
 from ..utils.config import MODELS_PATH
 
+import zipfile
+import os
+import io
+import json
+import string
+import random
+import shutil
+from datetime import datetime
+
 models = dict()
+
+RESULTS_FILE = "results.json"
+MODEL_FILENAME = "model.pkl"
 
 
 def get_model_from_id(id):
@@ -16,12 +27,10 @@ def get_model_from_id(id):
         data = json.load(file)
 
     model = Model(data['name'], id)
-    # model.path = data['path']
     model.state = data['state']
     model.last_accessed = datetime.strptime(data['last_accessed'], '%Y-%m-%d %H:%M:%S')
 
     dataset_data = data['loader']
-    # model.dataset.path = dataset_data['path']
     model.loader.item_tfms = dataset_data['item_tfms']
     model.loader.valid_pct = dataset_data['valid_pct']
     model.loader.bs = dataset_data['bs']
@@ -38,7 +47,6 @@ def get_model_from_id(id):
     model.learner.learner_exists = learner_data['learner_exists']
     model.learner.test_accuracy = learner_data['test_accuracy']
     model.learner.test_loss = learner_data['test_loss']
-    # model.learner.path = learner_data['path']
 
     return model
 
@@ -53,7 +61,7 @@ def verify_name(new_name):
 
 
 def generate_model_id():
-    tmp = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(8)])
+    tmp = ''.join([random.choice(string.ascii_letters + string.digits) for _ in range(8)])
     if models.get(tmp) is not None:
         return generate_model_id()
     return tmp
@@ -81,9 +89,9 @@ def get_model(id):
 def create_model(name):
 
     if verify_name(name):
-        id = generate_model_id()
-        model = Model(name, id, save_on_create=True)
-        models[id] = model
+        model_id = generate_model_id()
+        model = Model(name, model_id, save_on_create=True)
+        models[model_id] = model
         return model
     else:
         return None
@@ -103,8 +111,8 @@ def change_name(id, new_name):
 
 
 def upload_model(stream):
-    id = generate_model_id()
-    path = os.path.join(MODELS_PATH, id)
+    model_id = generate_model_id()
+    path = os.path.join(MODELS_PATH, model_id)
     os.makedirs(path, exist_ok=True)
 
     it = 0
@@ -201,7 +209,6 @@ class Model:
             return "The model doesn't have a test set."
         else:
             return "UNKNOWN STATE"
-        self.save()
 
     def generate_confusion_matrix(self):
         if self.state == "TRAINED":
@@ -221,7 +228,7 @@ class Model:
             return "Model isn't ready to predict"
 
     def get_training_results(self):
-        with open(os.path.join(self.path, "results.json"), 'r') as f:
+        with open(os.path.join(self.path, RESULTS_FILE), 'r') as f:
             return json.load(f)
 
     def change_learner_property(self, prop, value):
@@ -236,9 +243,8 @@ class Model:
             self.learner.arch = value
             changed = True
 
-        if changed:
-            if self.state == "TRAINED" or self.state == "IN_TRAINING":
-                self.state = "DATASET"
+        if changed and (self.state == "TRAINED" or self.state == "IN_TRAINING"):
+            self.state = "DATASET"
         self.save()
         return changed
 
@@ -270,21 +276,21 @@ class Model:
         models.pop(self.id)
 
     def remove_learner(self):
-        if os.path.exists(os.path.join(self.path, "model.pkl")):
-            os.remove(os.path.join(self.path, "model.pkl"))
+        if os.path.exists(os.path.join(self.path, MODEL_FILENAME)):
+            os.remove(os.path.join(self.path, MODEL_FILENAME))
         if os.path.exists(os.path.join(self.path, "heatmap.png")):
             os.remove(os.path.join(self.path, "model.png"))
         if os.path.exists(os.path.join(self.path, "grad-cam.png")):
             os.remove(os.path.join(self.path, "grad-cam.png"))
         if os.path.exists(os.path.join(self.path, "prob_graph.png")):
             os.remove(os.path.join(self.path, "prob_graph.png"))
-        if os.path.exists(os.path.join(self.path, "results.json")):
-            os.remove(os.path.join(self.path, "results.json"))
+        if os.path.exists(os.path.join(self.path, RESULTS_FILE)):
+            os.remove(os.path.join(self.path, RESULTS_FILE))
 
         self.state = "DATASET"
         self.learner = PretrainedLearner(self.loader, self.path)
         self.save()
 
     def remove_dataset(self):
-        if os.path.exists(os.path.join(MODELS_PATH, self.id, "model.pkl")):
-            os.remove(os.path.join(MODELS_PATH, self.id, "model.pkl"))
+        if os.path.exists(os.path.join(MODELS_PATH, self.id, MODEL_FILENAME)):
+            os.remove(os.path.join(MODELS_PATH, self.id, MODEL_FILENAME))

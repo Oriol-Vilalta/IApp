@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, send_file, Response
 from flask_cors import CORS
 from werkzeug.exceptions import BadRequestKeyError
+from fastai.vision.core import PILImage
 
 from ..ai.model import *
 from ..utils.logger import logger

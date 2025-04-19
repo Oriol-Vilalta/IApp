@@ -1,5 +1,11 @@
-from fastai.vision.all import *
+from fastai.vision.augment import Resize
+from fastai.vision.all import ResizeMethod
+from fastai.vision.data import ImageDataLoaders
+
+import os
+
 from .dataset import get_dataset
+
 
 
 def get_item_tfms(item_tfms):

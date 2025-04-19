@@ -9,3 +9,5 @@ old-frontend-src/
 *.log
 .dataset
 .scannerwork/
+.vscode/
+.sonarlint/

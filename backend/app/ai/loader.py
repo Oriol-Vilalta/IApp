@@ -1,5 +1,5 @@
 from fastai.vision.augment import Resize
-from fastai.data.transforms import ResizeMethod
+from fastai.vision.all import ResizeMethod
 from fastai.vision.data import ImageDataLoaders
 
 import os

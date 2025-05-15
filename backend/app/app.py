@@ -15,8 +15,7 @@ app = Flask(__name__)  # Creating a Flask application instance
 
 # Set up logging to a different file 
 handler = logging.FileHandler('flask.log', mode='w')
-formatter = logging.Formatter("[%(asctime)s] %(module)s\t- %(levelname)s: %(message)s",
-                              datefmt="%H:%M:%S")
+formatter = logging.Formatter("[%(asctime)s] %(module)s\t- %(levelname)s: %(message)s", datefmt="%H:%M:%S")
 
 handler.setFormatter(formatter)
 app.logger.setLevel(logging.INFO)

@@ -1,0 +1,16 @@
+.main-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #f0f0f0;
+    margin-left: 8vw;
+    margin-right: 8vw;
+    box-sizing: border-box;
+}
+
+.main-page-title {
+    padding: 10px;
+    font-size: 2.5rem;
+    margin: 20px 0;
+    color: #333;
+}

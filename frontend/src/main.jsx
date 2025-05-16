@@ -4,8 +4,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import './index.css';
 import Navbar from "./NavBar/NavBar";
-import ModelsPage from "./Models/Models";
-// import DatasetsMainPage from "./DatasetsMainPage/DatasetsMainPage";
+import ModelsPage from "./MainPages/Models";
+import DatasetsPage from "./MainPages/Datasets";
 // import Dataset from "./Dataset/Dataset";
 
 const root = document.getElementById("root");
@@ -21,10 +21,10 @@ ReactDOM.createRoot(root).render(
           <Route index element={<ModelsPage />} />
           {/* <Route path=":id" element={<Model />} /> */}
         </Route>
-        {/* <Route path="/datasets">
-          <Route index element={<DatasetsMainPage />} />
-          <Route path=":id" element={<Dataset />} />
-        </Route> */}
+        <Route path="/datasets">
+          <Route index element={<DatasetsPage />} />
+          {/* <Route path=":id" element={<Dataset />} /> */}
+        </Route>
       </Routes>
     </BrowserRouter>
   </>

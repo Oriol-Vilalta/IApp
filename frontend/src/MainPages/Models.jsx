@@ -2,7 +2,7 @@ import "./MainPage.css";
 
 import { useState } from "react";
 import { getRequest } from "../Utils/api";
-import Typography from "@mui/material/Typography";
+import TitleLabel from "../Components/TitleLabel";
 
 const url = import.meta.env.API_URL
 
@@ -33,12 +33,10 @@ const ModelsPage = () => {
 
     return (
         <div className="main-page">
-            <h1 className="main-page-title">
-                <Typography variant="h4" component="div">
-                    Title
-                </Typography>
-            </h1>
-        </div>
+            <TitleLabel text="Models" />
+
+            
+        </div> 
     );
 
 }

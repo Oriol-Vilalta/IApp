@@ -1,26 +1,25 @@
 import "./MainPage.css";
 
-import { useState } from "react";
-import { getRequest } from "../Utils/api";
+import { useState, useEffect } from "react";
 import TitleLabel from "../Components/TitleLabel";
-
-const url = import.meta.env.API_URL
-
+import ModelList from "./Models/ModelList";
 
 const ModelsPage = () => {
     const [models, setModels] = useState([]);
-
-
-    function sortModelsByDate(models) {
-        return models.sort(function (a, b) {return ('' + a.last_accessed).localeCompare(b.last_accessed)})
-    }
+    const [activeModel, setActiveModel] = useState(null);
 
     const fetchModels = async () => {
         try {
-            const response = getRequest('/models');
+            const response = await fetch("http://127.0.0.1:5000/models", {
+                mode: 'cors',
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
             if (response.status === 200) {
                 const data = await response.json();
-                setModels(data);
+                setModels(sortModelsByDate(data.models));
             } else {
                 console.error('Error fetching models: ', response.statusText);
             }
@@ -30,12 +29,21 @@ const ModelsPage = () => {
 
     }
 
+    function sortModelsByDate(models) {
+        return [...models].sort((a, b) => ('' + b.last_accessed).localeCompare(a.last_accessed));
+    }
+
+    useEffect(() => {
+        fetchModels();
+        const interval = setInterval(fetchModels, 2000);
+        return () => clearInterval(interval);
+    }, []);
+
 
     return (
         <div className="main-page">
-            <TitleLabel text="Models" />
-
-            
+            <TitleLabel text="Models" amount="2"/>
+            <ModelList models={models} setActiveModel={setActiveModel}/>
         </div> 
     );
 

@@ -1,20 +1,21 @@
 import "./MainPage.css";
 
-import { useState } from "react";
-import { getRequest } from "../Utils/api";
+import { useState, useEffect } from "react";
 import TitleLabel from "../Components/TitleLabel";
 
 const DatasetsPage = () => {
     const [datasets, setDatasets] = useState([]);
 
 
-    function sortDatasetsByDate(datasets) {
-        return datasets.sort(function (a, b) {return ('' + a.last_accessed).localeCompare(b.last_accessed)})
-    }
-
     const fetchDatasets = async () => {
         try {
-            const response = getRequest('/datasets');
+            const response = await fetch("http://127.0.0.1:5000" + "/datasets", {
+                mode: 'cors',
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
             if (response.status === 200) {
                 const data = await response.json();
                 setDatasets(data);
@@ -26,6 +27,12 @@ const DatasetsPage = () => {
         }
 
     }
+
+    useEffect(() => {
+        fetchDatasets();
+        const interval = setInterval(fetchDatasets, 2000);
+        return () => clearInterval(interval);
+    }, []);
 
 
     return (

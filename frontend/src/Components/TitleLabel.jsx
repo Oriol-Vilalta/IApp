@@ -1,17 +1,24 @@
 import Typography from '@mui/material/Typography';
+import "./TitleLabel.css";
 
-
-function TitleLabel({ text }) {
+function TitleLabel({ text, amount }) {
     return (
-        <h1 className="main-page-title">
+        <div className="main-page-title" style={{ display: 'flex', alignItems: 'center' }}>
             <Typography
                 variant="h4"
                 component="div"
-                sx={{ fontFamily: 'Roboto, sans-serif', fontWeight: 'bold' }}
+                sx={{ fontFamily: 'Roboto, sans-serif', fontWeight: 'bold', marginRight: 2 }}
             >
                 {text}
             </Typography>
-        </h1>
+            <Typography
+                variant="h6"
+                component="div"
+                sx={{ fontFamily: 'Roboto, sans-serif', fontWeight: 'bold' }}
+            >
+                {amount}
+            </Typography>
+        </div>
     );
 }
 

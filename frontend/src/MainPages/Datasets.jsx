@@ -3,6 +3,7 @@ import "./MainPage.css";
 import { useState, useEffect } from "react";
 import TitleLabel from "../Components/TitleLabel";
 import DatasetList from "./Datasets/DatasetList";
+import DatasetDetails from "./Datasets/DatasetDetails"; // <-- Import the details component
 
 const DatasetsPage = () => {
     const [datasets, setDatasets] = useState([]);
@@ -36,10 +37,14 @@ const DatasetsPage = () => {
     }, []);
 
 
+
     return (
-        <div className="main-list-page">
-            <TitleLabel text="Datasets" amount={datasets.length} />
-            <DatasetList datasets={datasets} setActiveDataset={setActiveDataset}/>
+        <div>
+            <div className="main-list-page">
+                <TitleLabel text="Datasets" amount={datasets.length} />
+                <DatasetList datasets={datasets} setActiveDataset={setActiveDataset}/>
+            </div>
+            <DatasetDetails activeDataset={activeDataset}/>
         </div> 
     );
 

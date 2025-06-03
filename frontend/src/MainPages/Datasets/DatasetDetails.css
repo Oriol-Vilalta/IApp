@@ -1,0 +1,15 @@
+.model-details {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: #135E4B;
+    padding-left: 8vw;
+    padding-right: 8vw;
+    box-sizing: border-box;
+    padding-top: 25px;         
+    padding-bottom: 30px;      
+    border-top-left-radius: 16px;   
+    border-top-right-radius: 16px;
+}
+

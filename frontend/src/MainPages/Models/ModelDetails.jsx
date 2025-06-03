@@ -4,7 +4,7 @@ import Chip from '@mui/material/Chip';
 const ModelDetails = ({ activeModel }) => {
     if (!activeModel) return null;
 
-    const { id, name, last_accessed, state, learner, loader } = activeModel;
+    const { name, state, learner, loader } = activeModel;
 
     return (
         <div className="model-details">

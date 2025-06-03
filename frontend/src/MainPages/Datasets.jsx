@@ -2,10 +2,11 @@ import "./MainPage.css";
 
 import { useState, useEffect } from "react";
 import TitleLabel from "../Components/TitleLabel";
+import DatasetList from "./Datasets/DatasetList";
 
 const DatasetsPage = () => {
     const [datasets, setDatasets] = useState([]);
-
+    const [activeDataset, setActiveDataset] = useState(null);
 
     const fetchDatasets = async () => {
         try {
@@ -18,7 +19,7 @@ const DatasetsPage = () => {
             });
             if (response.status === 200) {
                 const data = await response.json();
-                setDatasets(data);
+                setDatasets(data.datasets);
             } else {
                 console.error('Error fetching datasets: ', response.statusText);
             }
@@ -38,7 +39,7 @@ const DatasetsPage = () => {
     return (
         <div className="main-page">
             <TitleLabel text="Datasets" />
-
+            <DatasetList datasets={datasets} setActiveDataset={setActiveDataset}/>
         </div> 
     );
 

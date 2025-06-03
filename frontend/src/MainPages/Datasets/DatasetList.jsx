@@ -3,21 +3,22 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
- 
 
-const ModelList = ({ models, setActiveModel }) => {
+
+
+const DatasetList = ({ datasets, setActiveDataset }) => {
     
     return (
         <Box sx={{ maxWidth: 'auto' }}>
             <List style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
-            {models && models.map((model) => (
-                <ListItem key={model.id} disablePadding>
+            {datasets && datasets.map((dataset) => (
+                <ListItem key={dataset.id} disablePadding>
                     <ListItemButton
-                        onMouseEnter={() => setActiveModel(model)}
+                        onMouseEnter={() => setActiveDataset(dataset)}
                         component="a"
-                        href={`/models/${model.id}`}
-                    >
-                        <ListItemText primary={model.name} secondary={`ID: ${model.id}`} />
+                        href={`/datasets/${dataset.id}`}
+                    > 
+                      <ListItemText primary={dataset.name} secondary={`ID: ${dataset.id}`} />
                     </ListItemButton>
                 </ListItem>
             ))}
@@ -27,4 +28,4 @@ const ModelList = ({ models, setActiveModel }) => {
 }
 
 
-export default ModelList;
+export default DatasetList;

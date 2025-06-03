@@ -17,7 +17,7 @@ const ModelList = ({ models, setActiveModel }) => {
                         component="a"
                         href={`/models/${model.id}`}
                     >
-                        <ListItemText primary={model.name} secondary={`ID: ${model.id}`} />
+                        <ListItemText primary={model.name} secondary={`${model.state}`} />
                     </ListItemButton>
                 </ListItem>
             ))}

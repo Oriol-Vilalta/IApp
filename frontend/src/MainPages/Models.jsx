@@ -3,6 +3,7 @@ import "./MainPage.css";
 import { useState, useEffect } from "react";
 import TitleLabel from "../Components/TitleLabel";
 import ModelList from "./Models/ModelList";
+import ModelDetails from "./Models/ModelDetails";
 
 const ModelsPage = () => {
     const [models, setModels] = useState([]);
@@ -41,10 +42,14 @@ const ModelsPage = () => {
 
 
     return (
-        <div className="main-page">
-            <TitleLabel text="Models" amount="2"/>
-            <ModelList models={models} setActiveModel={setActiveModel}/>
+        <div>
+            <div className="main-list-page">
+                <TitleLabel text="Models" amount={models.length} />
+                <ModelList models={models} setActiveModel={setActiveModel}/>
+            </div>
+            <ModelDetails activeModel={activeModel} />
         </div> 
+        
     );
 
 }

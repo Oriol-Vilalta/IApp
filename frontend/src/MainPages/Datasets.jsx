@@ -37,8 +37,8 @@ const DatasetsPage = () => {
 
 
     return (
-        <div className="main-page">
-            <TitleLabel text="Datasets" />
+        <div className="main-list-page">
+            <TitleLabel text="Datasets" amount={datasets.length} />
             <DatasetList datasets={datasets} setActiveDataset={setActiveDataset}/>
         </div> 
     );

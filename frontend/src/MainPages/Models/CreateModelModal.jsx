@@ -5,10 +5,12 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
 const CreateModelModal = ({ showCreateModel, setShowCreateModel }) => {
     const [modelName, setModelName] = React.useState('');
-    
+    const [errorMsg, setErrorMsg] = React.useState('');
+
     const onCreate = async () => {
         try {
             const response = await fetch('http://127.0.0.1:5000/models', {
@@ -21,18 +23,26 @@ const CreateModelModal = ({ showCreateModel, setShowCreateModel }) => {
 
             if (response.status === 201) {
                 setShowCreateModel(false);
+                setErrorMsg('');
+                setModelName('');
             } else if (response.status === 400) {
-                console.error('Model already exists');
+                setErrorMsg('This name is already in use');
             }
         } catch (error) {
-            console.error('Error creating model:', error);
-        };
-    }
+            console.log('Error creating model:', error);
+        }
+    };
+
+    const handleClose = () => {
+        setShowCreateModel(false);
+        setErrorMsg('');
+        setModelName('');
+    };
 
     return (
         <Dialog
             open={showCreateModel}
-            onClose={() => setShowCreateModel(false)}
+            onClose={handleClose}
             PaperProps={{
                 style: {
                     width: 400,
@@ -48,18 +58,27 @@ const CreateModelModal = ({ showCreateModel, setShowCreateModel }) => {
                         className='model-name-input'
                         id="model-name-input"
                         value={modelName}
-                        onChange={e => setModelName(e.target.value)}
+                        onChange={e => {
+                            setModelName(e.target.value);
+                            setErrorMsg('');
+                        }}
                         style={{ width: '100%', marginTop: 8, marginBottom: 8 }}
                         multiline
                         minRows={1}
                         variant="outlined"
                         placeholder="Enter model name"
+                        error={!!errorMsg}
                     />
+                    {errorMsg && (
+                        <Typography color="error" variant="body2" style={{ marginTop: 4 }}>
+                            {errorMsg}
+                        </Typography>
+                    )}
                 </div>
             </DialogContent>
             <DialogActions>
                 <Button
-                    onClick={() => setShowCreateModel(false)}
+                    onClick={handleClose}
                     color="error"
                 >
                     Cancel
@@ -67,9 +86,7 @@ const CreateModelModal = ({ showCreateModel, setShowCreateModel }) => {
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={async () => {
-                        await onCreate(modelName);
-                    }}
+                    onClick={onCreate}
                     disabled={!modelName.trim()}
                 >
                     Create

@@ -4,11 +4,14 @@ import { useState, useEffect } from "react";
 import TitleLabel from "../Components/TitleLabel";
 import ModelList from "./Models/ModelList";
 import ModelDetails from "./Models/ModelDetails";
+import CreateObjectButton from "../Components/CreateObjectButton";
+import CreateModelModal from "./Models/CreateModelModal";
 
 const ModelsPage = () => {
     const [models, setModels] = useState([]);
     const [activeModel, setActiveModel] = useState(null);
-
+    const [showCreateModel, setShowCreateModel] = useState(false);
+    
     const fetchModels = async () => {
         try {
             const response = await fetch("http://127.0.0.1:5000/models", {
@@ -40,16 +43,22 @@ const ModelsPage = () => {
         return () => clearInterval(interval);
     }, []);
 
-
     return (
         <div>
             <div className="main-list-page">
-                <TitleLabel text="Models" amount={models.length} />
-                <ModelList models={models} setActiveModel={setActiveModel}/>
+                <div className="main-list-header">
+                    <TitleLabel text="Models" amount={models.length} />
+                    <CreateObjectButton label="Create Model" setShowCreateModel={setShowCreateModel}/>
+                </div>
+                <ModelList models={models} setActiveModel={setActiveModel} />
             </div>
             <ModelDetails activeModel={activeModel} />
-        </div> 
-        
+            
+            <CreateModelModal 
+                showCreateModel={showCreateModel} 
+                setShowCreateModel={setShowCreateModel}
+            />
+        </div>
     );
 
 }

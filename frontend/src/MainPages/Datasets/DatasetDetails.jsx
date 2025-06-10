@@ -1,11 +1,10 @@
-import React from "react";
 import "../Models/ModelDetails.css";
 
 
 const DatasetDetails = ({ activeDataset }) => {
     if (!activeDataset) return null;
 
-    const { id, name, path, has_test, train_vocab, test_vocab } = activeDataset;
+    const { name, train_vocab } = activeDataset;
 
     const trainVocabCount = train_vocab && Array.isArray(train_vocab) ? train_vocab.length : 0;
 

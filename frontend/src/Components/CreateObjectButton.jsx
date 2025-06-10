@@ -1,12 +1,12 @@
 import React from 'react';
 import Button from '@mui/material/Button';
 
-const CreateObjectButton = ({ label, setShowCreateModel }) => {
+const CreateObjectButton = ({ label, setShowCreate }) => {
     return (
         <Button
             variant="contained"
             type="button"
-            onClick={() => setShowCreateModel(true)}
+            onClick={() => setShowCreate(true)}
         >
             {label}
         </Button>

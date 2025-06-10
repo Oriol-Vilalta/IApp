@@ -3,11 +3,14 @@ import "./MainPage.css";
 import { useState, useEffect } from "react";
 import TitleLabel from "../Components/TitleLabel";
 import DatasetList from "./Datasets/DatasetList";
-import DatasetDetails from "./Datasets/DatasetDetails"; // <-- Import the details component
+import DatasetDetails from "./Datasets/DatasetDetails"; 
+import CreateObjectButton from "../Components/CreateObjectButton";
+import CreateDatasetModal from "./Datasets/CreateDatasetModal";
 
 const DatasetsPage = () => {
     const [datasets, setDatasets] = useState([]);
     const [activeDataset, setActiveDataset] = useState(null);
+    const [showCreateDataset, setShowCreateDataset] = useState(false);
 
     const fetchDatasets = async () => {
         try {
@@ -37,14 +40,21 @@ const DatasetsPage = () => {
     }, []);
 
 
-
     return (
         <div>
             <div className="main-list-page">
-                <TitleLabel text="Datasets" amount={datasets.length} />
+                <div className="main-list-header">
+                    <TitleLabel text="Datasets" amount={datasets.length} />
+                    <CreateObjectButton label="Create Dataset" setShowCreate={setShowCreateDataset}/>
+                </div>
                 <DatasetList datasets={datasets} setActiveDataset={setActiveDataset}/>
             </div>
             <DatasetDetails activeDataset={activeDataset}/>
+
+            <CreateDatasetModal
+                showCreateDataset={showCreateDataset} 
+                setShowCreateDataset={setShowCreateDataset}
+            />
         </div> 
     );
 

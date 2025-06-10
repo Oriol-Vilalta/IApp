@@ -14,7 +14,7 @@ const ModelsPage = () => {
     
     const fetchModels = async () => {
         try {
-            const response = await fetch("http://127.0.0.1:5000/models", {
+            const response = await fetch("http://127.0.0.1:5000" + "/models", {
                 mode: 'cors',
                 method: 'GET',
                 headers: {
@@ -48,7 +48,7 @@ const ModelsPage = () => {
             <div className="main-list-page">
                 <div className="main-list-header">
                     <TitleLabel text="Models" amount={models.length} />
-                    <CreateObjectButton label="Create Model" setShowCreateModel={setShowCreateModel}/>
+                    <CreateObjectButton label="Create Model" setShowCreate={setShowCreateModel}/>
                 </div>
                 <ModelList models={models} setActiveModel={setActiveModel} />
             </div>

@@ -11,13 +11,15 @@ function TitleLabel({ text, amount }) {
             >
                 {text}
             </Typography>
-            <Typography
-                variant="h6"
-                component="div"
-                sx={{ fontFamily: 'Roboto, sans-serif', fontWeight: 'bold' }}
-            >
-                {amount}
-            </Typography>
+            {amount !== 0 && (
+                <Typography
+                    variant="h6"
+                    component="div"
+                    sx={{ fontFamily: 'Roboto, sans-serif', fontWeight: 'bold' }}
+                >
+                    {amount}
+                </Typography>
+            )}
         </div>
     );
 }

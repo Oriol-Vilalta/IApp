@@ -6,7 +6,9 @@ import './index.css';
 import Navbar from "./NavBar/NavBar";
 import ModelsPage from "./MainPages/Models";
 import DatasetsPage from "./MainPages/Datasets";
-// import Dataset from "./Dataset/Dataset";
+
+import Model from "./Model/Model";
+import Dataset from "./Dataset/Dataset";
 
 const root = document.getElementById("root");
 
@@ -19,11 +21,11 @@ ReactDOM.createRoot(root).render(
         <Route path="/" element={<ModelsPage />} />
         <Route path="/models">
           <Route index element={<ModelsPage />} />
-          {/* <Route path=":id" element={<Model />} /> */}
+          <Route path=":id" element={<Model />} />
         </Route>
         <Route path="/datasets">
           <Route index element={<DatasetsPage />} />
-          {/* <Route path=":id" element={<Dataset />} /> */}
+          <Route path=":id" element={<Dataset />} />
         </Route>
       </Routes>
     </BrowserRouter>

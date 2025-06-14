@@ -1,0 +1,8 @@
+.main-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin-left: 8vw;
+    margin-right: 8vw;
+    box-sizing: border-box;
+}

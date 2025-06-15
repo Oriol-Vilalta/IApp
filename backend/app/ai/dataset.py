@@ -255,11 +255,13 @@ class Dataset:
     def remove_dataset(self):
         shutil.rmtree(os.path.join(self.path))
 
-    def gen_profile_image(self):
-        if not os.path.exists(os.path.join(self.path, "profile.png")) and len(self.train_vocab) > 0:
-            label = random.choice(os.listdir(os.path.join(self.path, "train")))
-            image_name = random.choice(os.listdir(os.path.join(self.path, "train", label)))
-            shutil.copyfile(os.path.join(self.path, "train", label, image_name), os.path.join(self.path, "profile.png"))
+    def get_first_image_name(self, label):
+        logger.debug(os.path.join(self.path, "train", label))
+        if os.path.exists(os.path.join(self.path, "train", label)):
+            images = os.listdir(os.path.join(self.path, "train", label))
+            if images:
+                return os.path.join(self.path, "train", label, images[0])
+        return None
 
     def compress(self):
         zip_buffer = io.BytesIO()

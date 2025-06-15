@@ -1,5 +1,5 @@
 import React from 'react';
-
+import VocabElement from './VocabElement';
 
 
 const TrainVocabList = ({ dataset }) => {
@@ -18,8 +18,7 @@ const TrainVocabList = ({ dataset }) => {
             <h2>Train Vocabulary</h2>
             {dataset.train_vocab.map((vocab, index) => (
                 <div key={index} className="vocab-item">
-                    <h3>{vocab.name}</h3>
-                    
+                    <VocabElement label={vocab} />
                 </div>
             ))}
         </div>

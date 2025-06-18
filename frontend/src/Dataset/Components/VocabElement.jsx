@@ -1,12 +1,61 @@
+import "./VocabElement.css";
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Avatar from '@mui/material/Avatar';
+import ListItemText from '@mui/material/ListItemText';
+import Button from '@mui/material/Button';
 
+const VocabElement = ({ label, id, vocabKey }) => {
 
+    const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
 
-const VocabElement = ({ label }) => {
+    const handleDelete = async () => {
+        if (!window.confirm(`Are you sure you want to delete the label "${capitalizedLabel}" and all its images?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch("http://127.0.0.1:5000" + "/datasets/" + id + "/delete/label?name=" + label, {
+                mode: 'cors',
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.status === 200) {
+                window.location.reload();
+            } else {
+                console.error(`Failed to delete label "${capitalizedLabel}":`, response.statusText);
+            }
+        } catch (error) {
+            console.error(`Error while deleting label "${capitalizedLabel}":`, error);
+        }
+
+    };
 
     return (
-        <span className="vocab-element">
-            {label}
-        </span>
+        <ListItem key={vocabKey}>
+            <ListItemAvatar>
+                <Avatar
+                    variant="square"
+                    src={`http://127.0.0.1:5000/datasets/${id}/image/${label}`}
+                    alt={capitalizedLabel}
+                    sx={{ width: 70, height: 70, marginRight: 2 }}
+                />
+            </ListItemAvatar>
+            <ListItemText primary={capitalizedLabel} />
+            <ListItemAvatar>
+                <Button
+                    edge="start"
+                    color="error"
+                    variant="contained"
+                    aria-label="delete"
+                    onClick={handleDelete}
+                >
+                    Delete
+                </Button>
+            </ListItemAvatar>
+        </ListItem>
     );
 };
 

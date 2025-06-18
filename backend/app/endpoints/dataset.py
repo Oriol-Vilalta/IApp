@@ -154,14 +154,14 @@ def download_a_dataset(id):
 
 
 # Downloads the first image of a dataset.
-@blueprint.route('/datasets/<string:id>/image', methods=['GET'])
-def get_first_image(id):
-    logger.info(f"Retrieving image for label '{request.json['label']}' in dataset '{id}'")
+@blueprint.route('/datasets/<string:id>/image/<string:label>', methods=['GET'])
+def get_first_image(id, label):
+    logger.info(f"Retrieving image for label '{label}' in dataset '{id}'")
     dataset = get_dataset(id)
     if dataset:
-        label = request.json['label']
-        logger.debug(dataset.get_first_image_name(label))
-        return send_file(dataset.get_first_image_name(label), mimetype='image/png')
+        name = dataset.get_first_image_name(label)
+        logger.debug(name)
+        return send_file(name, mimetype='image/png')
     else:
         logger.error(f"{request.path}: Dataset doesn't exist.")
         return jsonify({"error": "Dataset not found"}), 404

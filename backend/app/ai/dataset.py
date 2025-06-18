@@ -256,7 +256,6 @@ class Dataset:
         shutil.rmtree(os.path.join(self.path))
 
     def get_first_image_name(self, label):
-        logger.debug(os.path.join(self.path, "train", label))
         if os.path.exists(os.path.join(self.path, "train", label)):
             images = os.listdir(os.path.join(self.path, "train", label))
             if images:

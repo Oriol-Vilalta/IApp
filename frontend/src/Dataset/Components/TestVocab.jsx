@@ -3,16 +3,16 @@ import Button from '@mui/material/Button';
 import VocabElement from './VocabElement';
 import React, { useRef } from 'react';
 
-const TrainVocabList = ({ dataset }) => {
+const TestVocabList = ({ dataset }) => {
     const fileInputRef = useRef();
 
     const handleDelete = async () => {
-        if (!window.confirm(`Are you sure you want to delete all the training data?`)) {
+        if (!window.confirm(`Are you sure you want to delete all the testing data?`)) {
             return;
         }
 
         try {
-            const response = await fetch("http://127.0.0.1:5000" + "/datasets/" + dataset.id + "/delete/train", {
+            const response = await fetch("http://127.0.0.1:5000" + "/datasets/" + dataset.id + "/delete/test", {
                 mode: 'cors',
                 method: 'DELETE',
                 headers: {
@@ -22,10 +22,10 @@ const TrainVocabList = ({ dataset }) => {
             if (response.status === 200) {
                 window.location.reload();
             } else {
-                console.error(`Failed to delete training data: `, response.statusText);
+                console.error(`Failed to delete testing data: `, response.statusText);
             }
         } catch (error) {
-            console.error(`Error while deleting training data: `, error);
+            console.error(`Error while deleting testing data: `, error);
         }
     };
 
@@ -37,32 +37,39 @@ const TrainVocabList = ({ dataset }) => {
         formData.append('file', file);
 
         try {
-            const response = await fetch(`http://127.0.0.1:5000/datasets/${dataset.id}/upload/train`, {
+            const response = await fetch(`http://127.0.0.1:5000/datasets/${dataset.id}/upload/test`, {
                 method: 'POST',
                 body: formData,
             });
             if (response.status === 200) {
                 window.location.reload();
             } else {
-                console.error('Failed to upload training data:', response.statusText);
+                console.error('Failed to upload testing data:', response.statusText);
             }
         } catch (error) {
-            console.error('Error while uploading training data:', error);
+            console.error('Error while uploading testing data:', error);
         }
     };
 
-    if(dataset.train_vocab.length === 0) {
+    if(dataset.test_vocab.length === 0) {
         return (
             <div>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', justifyContent: 'space-between' }}>
-                    <h2 style={{ margin: 0 }}>Training Data</h2>
+                    <h2 style={{ margin: 0 }}>Testing Data</h2>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <Button 
                             variant="contained" 
                             color="primary"
                             onClick={() => fileInputRef.current.click()}
                         >
-                            Upload Training Data
+                            Generate Testing Data
+                        </Button>
+                        <Button 
+                            variant="contained" 
+                            color="primary"
+                            onClick={() => fileInputRef.current.click()}
+                        >
+                            Upload Testing Data
                         </Button>
                         <input
                             ref={fileInputRef}
@@ -72,7 +79,7 @@ const TrainVocabList = ({ dataset }) => {
                         />
                     </div>
                 </div>
-                <p>No training data available.</p>
+                <p>No testing data available.</p>
             </div>
         );
     }
@@ -80,7 +87,7 @@ const TrainVocabList = ({ dataset }) => {
     return (
         <div>
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', justifyContent: 'space-between' }}>
-                <h2 style={{ paddingLeft: 10 }}>Training Data</h2>
+                <h2 style={{ paddingLeft: 10 }}>Testing Data</h2>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <Button
                         color="error"
@@ -88,14 +95,21 @@ const TrainVocabList = ({ dataset }) => {
                         aria-label="delete"
                         onClick={handleDelete}
                     >
-                        Delete Training Data
+                        Delete Testing Data
                     </Button>
                     <Button 
                         variant="contained" 
                         color="primary"
                         onClick={() => fileInputRef.current.click()}
                     >
-                        Upload Training Data
+                        Generate Testing Data
+                    </Button>
+                    <Button 
+                        variant="contained" 
+                        color="primary"
+                        onClick={() => fileInputRef.current.click()}
+                    >
+                        Upload Testing Data
                     </Button>
                     <input
                         ref={fileInputRef}
@@ -106,7 +120,7 @@ const TrainVocabList = ({ dataset }) => {
                 </div>
             </div>
             <List>
-                {dataset.train_vocab.map((vocab, index) => (
+                {dataset.test_vocab.map((vocab, index) => (
                     <VocabElement label={vocab} id={dataset.id} vocabKey={index} key={index}/>
                 ))}
             </List>
@@ -114,4 +128,4 @@ const TrainVocabList = ({ dataset }) => {
     );
 };
 
-export default TrainVocabList;
+export default TestVocabList;

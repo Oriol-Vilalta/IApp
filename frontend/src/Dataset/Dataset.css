@@ -1,8 +1,58 @@
 .main-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;   /* <-- Make children (sidebar, main) side by side */
     height: 100%;
     margin-left: 8vw;
     margin-right: 8vw;
     box-sizing: border-box;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 180px;
+    background: #135E4B;
+    padding: 1rem 1rem;
+    min-height: 100vh;
+    box-sizing: border-box;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.sidebar li {
+    margin-bottom: 1rem;
+}
+
+.sidebar button {
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 0.8rem;
+    color: inherit;
+    text-align: left;
+    font-size: 1.08rem;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.sidebar button:hover,
+.sidebar button.active,
+.sidebar button:focus {
+    background: #0e4638; 
+    color: #fff;
+}
+
+
+main {
+    flex: 1;
+    margin-right: 2rem;
 }

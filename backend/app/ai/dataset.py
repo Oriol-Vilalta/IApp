@@ -255,11 +255,11 @@ class Dataset:
     def remove_dataset(self):
         shutil.rmtree(os.path.join(self.path))
 
-    def get_first_image_name(self, label):
-        if os.path.exists(os.path.join(self.path, "train", label)):
-            images = os.listdir(os.path.join(self.path, "train", label))
+    def get_first_image_name(self, label, mode="train"):
+        if os.path.exists(os.path.join(self.path, mode, label)):
+            images = os.listdir(os.path.join(self.path, mode, label))
             if images:
-                return os.path.join(self.path, "train", label, images[0])
+                return os.path.join(self.path, mode, label, images[0])
         return None
 
     def compress(self):

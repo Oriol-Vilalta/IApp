@@ -120,7 +120,7 @@ const TestVocabList = ({ dataset }) => {
             </div>
             <List>
                 {dataset.test_vocab.map((vocab, index) => (
-                    <VocabElement label={vocab} id={dataset.id} vocabKey={index} key={index}/>
+                    <VocabElement label={vocab} id={dataset.id} vocabKey={index} key={index} mode={"test"}/>
                 ))}
             </List>
         </div>

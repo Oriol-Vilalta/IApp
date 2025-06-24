@@ -154,12 +154,12 @@ def download_a_dataset(id):
 
 
 # Downloads the first image of a dataset.
-@blueprint.route('/datasets/<string:id>/image/<string:label>', methods=['GET'])
-def get_first_image(id, label):
-    logger.info(f"Retrieving image for label '{label}' in dataset '{id}'")
+@blueprint.route('/datasets/<string:id>/image/<string:mode>/<string:label>', methods=['GET'])
+def get_first_image(id, mode, label):
+    logger.info(f"Retrieving train image for label '{label}' in dataset '{id}'")
     dataset = get_dataset(id)
     if dataset:
-        name = dataset.get_first_image_name(label)
+        name = dataset.get_first_image_name(label, mode)
         logger.debug(name)
         return send_file(name, mimetype='image/png')
     else:

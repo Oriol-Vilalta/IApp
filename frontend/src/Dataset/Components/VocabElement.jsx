@@ -5,7 +5,7 @@ import Avatar from '@mui/material/Avatar';
 import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
 
-const VocabElement = ({ label, id, vocabKey }) => {
+const VocabElement = ({ label, id, vocabKey, mode }) => {
 
     const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
 
@@ -38,7 +38,7 @@ const VocabElement = ({ label, id, vocabKey }) => {
             <ListItemAvatar>
                 <Avatar
                     variant="square"
-                    src={`http://127.0.0.1:5000/datasets/${id}/image/${label}`}
+                    src={`http://127.0.0.1:5000/datasets/${id}/image/${mode}/${label}`}
                     alt={capitalizedLabel}
                     sx={{ width: 70, height: 70, marginRight: 2 }}
                 />

@@ -2,9 +2,12 @@ import { List } from '@mui/material';
 import Button from '@mui/material/Button';
 import VocabElement from './VocabElement';
 import React, { useRef } from 'react';
+import GeneratTestModal from './GenerateTestModal';
 
 const TestVocabList = ({ dataset }) => {
     const fileInputRef = useRef();
+
+    const [showGenerateModal, setShowGenerateModal] = React.useState(false);
 
     const handleDelete = async () => {
         if (!window.confirm(`Are you sure you want to delete all the testing data?`)) {
@@ -60,7 +63,7 @@ const TestVocabList = ({ dataset }) => {
                         <Button 
                             variant="contained" 
                             color="primary"
-                            onClick={() => fileInputRef.current.click()}
+                            onClick={() => setShowGenerateModal(true)}
                         >
                             Generate Testing Data
                         </Button>
@@ -80,6 +83,9 @@ const TestVocabList = ({ dataset }) => {
                     </div>
                 </div>
                 <p>No testing data available.</p>
+                <GeneratTestModal datasetId={dataset.id} 
+                    showGenerateTestModel={showGenerateModal} 
+                    setShowGenerateTestModal={setShowGenerateModal} />
             </div>
         );
     }
@@ -96,14 +102,7 @@ const TestVocabList = ({ dataset }) => {
                         onClick={handleDelete}
                     >
                         Delete Testing Data
-                    </Button>
-                    <Button 
-                        variant="contained" 
-                        color="primary"
-                        onClick={() => fileInputRef.current.click()}
-                    >
-                        Generate Testing Data
-                    </Button>
+                    </Button>  
                     <Button 
                         variant="contained" 
                         color="primary"

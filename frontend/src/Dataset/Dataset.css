@@ -10,11 +10,11 @@
 
 .sidebar {
     width: 180px;
-    background: #135E4B;
+    background: #acbdbc;
     padding: 1rem 1rem;
     min-height: 100vh;
     box-sizing: border-box;
-    color: #fff;
+    color: #000000;
     display: flex;
     flex-direction: column;
     align-items: flex-start;

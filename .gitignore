@@ -11,3 +11,4 @@ old-frontend-src/
 .scannerwork/
 .vscode/
 .sonarlint/
+.idea/

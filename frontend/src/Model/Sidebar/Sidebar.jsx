@@ -8,6 +8,11 @@ const Sidebar = ({ setMode, state }) => {
             </div>
             <ul className="sidebar-menu">
                 <SidebarButton
+                    label="Overview"
+                    setMode={setMode}
+                    isActive={false}
+                />
+                <SidebarButton
                     label="Dataset"
                     setMode={setMode}
                     isActive={false}

@@ -80,6 +80,7 @@ const DatasetMainPage = ({ model, setHasTest }) => {
         }
     };
 
+
     useEffect(() => {
         const load = async () => {
             const response = await fetch("http://127.0.0.1:5000/datasets", {
@@ -93,6 +94,7 @@ const DatasetMainPage = ({ model, setHasTest }) => {
 
                 // Only set selectedDatasetId if the model's dataset_id is in the list
                 const defaultId = model?.loader?.dataset_id;
+                console.log("Default Dataset ID: ", model.loader.dataset_id);
                 const found = data.datasets.find(ds => ds.id === defaultId);
                 if (found) {
                     setSelectedDatasetId(defaultId);
@@ -117,7 +119,10 @@ const DatasetMainPage = ({ model, setHasTest }) => {
 
     return (
         <div className="main-page">
-            <h1>Dataset Main Page</h1>
+            <h1>Dataset</h1>
+            <p>
+                This page allows you to select a dataset for the model. The selected dataset will be used for training and testing.
+            </p>
             <div
                 style={{
                     display: "flex",
@@ -135,6 +140,7 @@ const DatasetMainPage = ({ model, setHasTest }) => {
                             label="Select Dataset"
                             value={selectedDatasetId}
                             onChange={handleChange}
+                            disabled={model.state === "IN_TRAINING"}
                         >
                             {datasets.map((dataset) => (
                                 <MenuItem key={dataset.id} value={dataset.id}>

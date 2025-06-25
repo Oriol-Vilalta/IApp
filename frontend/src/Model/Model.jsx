@@ -6,14 +6,14 @@ import DatasetMainPage from "./Dataset/DatasetMainPage";
 import TrainMainPage from "./Train/TrainMainPage";
 import TestMainPage from "./Test/TestMainPage";
 import PredictMainPage from "./Predict/PredictMainPage";
+import OverviewMainPage from "./Overview/OverviewMainPage";
 
 
 const Model = () => {
     const { id } = useParams();
     const [model, setModel] = useState(null);
-    const [state, setState] = useState("TRAINED");
     const [hasTest, setHasTest] = useState(false);
-    const [mode, setMode] = useState("Dataset");
+    const [mode, setMode] = useState("Overview");
 
     const fetchModel = async () => {
         try {
@@ -36,27 +36,32 @@ const Model = () => {
     };
 
     useEffect(() => {
+        console.log("Fetching model with ID:", id);
         fetchModel();
     }, [id]);
 
     return (
         <div style={{ display: "flex" }}>
-            <Sidebar setMode={setMode} state={state} />
+            <Sidebar setMode={setMode} state={model?.state || ""} />
             
+            {mode === "Overview" && (
+                <OverviewMainPage model={model}/>
+            )}
+
             {mode === "Dataset" && (
                 <DatasetMainPage  model={model} setHasTest={setHasTest} />
             )}
 
             {mode === "Train" && (
-                <TrainMainPage />
+                <TrainMainPage model={model}/>
             )}
 
             {mode === "Test" && (
-                <TestMainPage />
+                <TestMainPage model={model} hasTest={hasTest}/>
             )}
 
             {mode === "Predict" && (
-                <PredictMainPage />
+                <PredictMainPage model={model}/>
             )}
         </div>
     );

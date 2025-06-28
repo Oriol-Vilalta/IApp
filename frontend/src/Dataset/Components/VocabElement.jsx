@@ -34,7 +34,7 @@ const VocabElement = ({ label, id, vocabKey, mode }) => {
     };
 
     return (
-        <ListItem key={vocabKey}>
+        <ListItem key={vocabKey} className="vocab-list-item">
             <ListItemAvatar>
                 <Avatar
                     variant="square"

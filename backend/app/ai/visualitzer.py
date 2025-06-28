@@ -28,10 +28,14 @@ class HookBwd:
 
 
 def heatmap_cam(learner, img, dls, path):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Move model to device
+    learner.model.to(device)
+    x, = first(dls.test_dl([img]))
+    x = x.to(device)
+
     class Hook():
         def hook_func(self, m, i, o): self.stored = o.detach().clone()
-
-    x, = first(dls.test_dl([img]))
 
     hook_output = Hook()
     hook = learner.model[0].register_forward_hook(hook_output.hook_func)
@@ -41,11 +45,12 @@ def heatmap_cam(learner, img, dls, path):
 
     # cam_map = torch.einsum('ck,kij->cij', learner.model[1][-1].weight, act)
     try:
-        cam_map = torch.einsum('oc,ckw->okw', learner.model[1][-1].weight, act)
+        cam_map = torch.einsum('oc,ckw->okw', learner.model[1][-1].weight.to(device), act)
     except RuntimeError:
+        hook.remove()
         return None
 
-    x_dec = TensorImage(dls.train.decode((x,))[0][0])
+    x_dec = TensorImage(dls.train.decode((x.cpu(),))[0][0])
     _, ax = plt.subplots()
     x_dec.show(ctx=ax)
     ax.imshow(cam_map[1].detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0), interpolation='bilinear', cmap='magma')
@@ -57,7 +62,10 @@ def heatmap_cam(learner, img, dls, path):
 
 
 def grad_cam(learner, img, dls, path):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    learner.model.to(device)
     x, = first(dls.test_dl([img]))
+    x = x.to(device)
     cls = 1
     with HookBwd(learner.model[0]) as hookg:
         with Hook(learner.model[0]) as hook:
@@ -70,7 +78,7 @@ def grad_cam(learner, img, dls, path):
     cam_map = (w * act[0]).sum(0)
 
     _, ax = plt.subplots()
-    x_dec = TensorImage(dls.train.decode((x,))[0][0])
+    x_dec = TensorImage(dls.train.decode((x.cpu(),))[0][0])
     x_dec.show(ctx=ax)
     ax.imshow(cam_map.detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0), interpolation='bilinear', cmap='magma')
 

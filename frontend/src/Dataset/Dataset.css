@@ -2,8 +2,6 @@
     display: flex;
     flex-direction: row;   /* <-- Make children (sidebar, main) side by side */
     height: 100%;
-    margin-left: 8vw;
-    margin-right: 8vw;
     box-sizing: border-box;
     min-height: 100vh;
 }

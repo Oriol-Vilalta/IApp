@@ -1,6 +1,7 @@
 import "./MainPage.css";
 
 import { useState, useEffect } from "react";
+import UploadModelButton from "./Models/UploadModelButton";
 import TitleLabel from "../Components/TitleLabel";
 import ModelList from "./Models/ModelList";
 import ModelDetails from "./Models/ModelDetails";
@@ -49,6 +50,7 @@ const ModelsPage = () => {
                 <div className="main-list-header">
                     <TitleLabel text="Models" amount={models.length} />
                     <CreateObjectButton label="Create Model" setShowCreate={setShowCreateModel}/>
+                    <UploadModelButton />
                 </div>
                 <ModelList models={models} setActiveModel={setActiveModel} />
             </div>

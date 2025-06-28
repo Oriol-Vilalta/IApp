@@ -7,7 +7,7 @@ logger = logging.getLogger('app')
 # Create a File Handler to separate app's logs from flask's logs
 
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler('app.log', mode="w")
+handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
 
 # Create a formatter and set it for the handler

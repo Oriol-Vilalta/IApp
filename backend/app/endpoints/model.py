@@ -224,11 +224,28 @@ def get_the_heatmap(id):
     model = get_model(id)
     if model:
         logger.debug(f"{request.path}: Heatmap sended successfully!")
+        model.heatmap(PILImage.create(os.path.join(model.path, "predict.jpg")), model.path)
         return send_file(os.path.join(model.path, "heatmap.png"), mimetype='image/png')
     else:
         logger.error(f"{request.path}: Model doesn't exist.")
         return jsonify({'error': 'Model does not exist'}), 404
 
+
+# DOWNLOAD HEATMAP - Download the heatmap image file
+@blueprint.route('/models/<string:id>/heatmap/download', methods=['GET'])
+def download_heatmap(id):
+    model = get_model(id)
+    if not model:
+        logger.error(f"{request.path}: Model doesn't exist.")
+        return jsonify({'error': 'Model does not exist'}), 404
+
+    heatmap_path = os.path.join(model.path, "heatmap.png")
+    if os.path.exists(heatmap_path):
+        logger.debug(f"{request.path}: Heatmap downloaded successfully.")
+        return send_file(heatmap_path, mimetype='image/png', as_attachment=True, download_name='heatmap.png')
+    else:
+        logger.error(f"{request.path}: Heatmap does not exist.")
+        return jsonify({'error': 'Heatmap does not exist'}), 404
 
 # GRADCAM - Retrieves the gradcam
 @blueprint.route('/models/<string:id>/gradcam', methods=['GET'])

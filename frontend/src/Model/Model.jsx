@@ -35,6 +35,11 @@ const Model = () => {
         }
     };
 
+    const changePage = (newMode) => {
+        setMode(newMode);
+        fetchModel(); 
+    }
+
     useEffect(() => {
         console.log("Fetching model with ID:", id);
         fetchModel();
@@ -42,7 +47,7 @@ const Model = () => {
 
     return (
         <div style={{ display: "flex" }}>
-            <Sidebar setMode={setMode} state={model?.state || ""} />
+            <Sidebar setMode={changePage} state={model?.state || ""} />
             
             {mode === "Overview" && (
                 <OverviewMainPage model={model}/>

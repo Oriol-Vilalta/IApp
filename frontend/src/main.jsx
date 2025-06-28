@@ -3,7 +3,7 @@ import { GlobalStyles } from '@mui/material';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import './index.css';
-import Navbar from "./NavBar/NavBar";
+import Navbar from "./Navbar/Navbar";
 import ModelsPage from "./MainPages/Models";
 import DatasetsPage from "./MainPages/Datasets";
 

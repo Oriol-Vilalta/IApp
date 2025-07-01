@@ -88,6 +88,7 @@ def upload_dataset(stream):
 
         datasets[id] = get_dataset_by_id(id)
         datasets[id].name = name + mod
+        datasets[id].path = path
         datasets[id].save()
 
 
@@ -256,10 +257,13 @@ class Dataset:
         shutil.rmtree(os.path.join(self.path))
 
     def get_first_image_name(self, label, mode="train"):
-        if os.path.exists(os.path.join(self.path, mode, label)):
-            images = os.listdir(os.path.join(self.path, mode, label))
+        if self.path is None or label is None or mode is None:
+            return None
+        dir_path = os.path.join(self.path, mode, label)
+        if os.path.exists(dir_path):
+            images = os.listdir(dir_path)
             if images:
-                return os.path.join(self.path, mode, label, images[0])
+                return os.path.join(dir_path, images[0])
         return None
 
     def compress(self):

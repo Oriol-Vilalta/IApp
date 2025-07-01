@@ -100,9 +100,9 @@ const Overview = ({ dataset }) => {
                 </li>
                 <li>
                     <strong>Testing:</strong>
-                    {dataset.train_vocab && dataset.train_vocab.length > 0 ? (
+                    {dataset.test_vocab && dataset.test_vocab.length > 0 ? (
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 80px)', gap: '8px', marginTop: '8px' }}>
-                            {dataset.train_vocab.slice(0, 8).map((vocab, idx) => (
+                            {dataset.test_vocab.slice(0, 8).map((vocab, idx) => (
                                 <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                                     <img
                                         src={`http://127.0.0.1:5000/datasets/${dataset.id}/image/test/${vocab}`}

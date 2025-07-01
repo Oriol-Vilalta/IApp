@@ -12,7 +12,7 @@ const Dataset = () => {
     const { id } = useParams();
 
     const [dataset, setDataset] = useState(null);
-    const [mode, setMode] = useState("train");
+    const [mode, setMode] = useState("overview");
 
     const fetchDataset = async () => {
         try {

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 
 import TrainVocabList from "./Components/TrainVocab";
 import TestVocabList from "./Components/TestVocab";
-import Overview from "./Components/Overview";
+import Overview from "./Components/OverviewMainPage";
 import TitleLabel from "../Components/TitleLabel";
 
 import "./Dataset.css";

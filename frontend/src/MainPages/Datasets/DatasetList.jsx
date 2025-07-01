@@ -9,7 +9,7 @@ import ListItemText from "@mui/material/ListItemText";
 const DatasetList = ({ datasets, setActiveDataset }) => {
     
     return (
-        <Box sx={{ maxWidth: 'auto' }}>
+        <Box sx={{ maxWidth: 'auto', maxHeight: 540, overflowY: 'auto'  }}>
             <List style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
             {datasets && datasets.map((dataset) => (
                 <ListItem key={dataset.id} disablePadding>

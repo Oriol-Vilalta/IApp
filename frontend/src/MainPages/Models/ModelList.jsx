@@ -8,7 +8,7 @@ import ListItemText from "@mui/material/ListItemText";
 const ModelList = ({ models, setActiveModel }) => {
     
     return (
-        <Box sx={{ maxWidth: 'auto' }}>
+        <Box sx={{ maxWidth: 'auto', maxHeight: 540, overflowY: 'auto' }}>
             <List style={{display: "flex", flexDirection: "column", justifyContent: "space-between"}}>
             {models && models.map((model) => (
                 <ListItem key={model.id} disablePadding>

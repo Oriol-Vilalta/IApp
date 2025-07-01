@@ -33,6 +33,7 @@ const TrainMainPage = ({ model }) => {
         try {
             const response = await fetch("http://127.0.0.1:5000/models/" + model.id + "/change_loader_property", {
                 method: "PUT",
+                mode: "cors",
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -41,6 +42,9 @@ const TrainMainPage = ({ model }) => {
 
             if (!response.ok) {
                 throw new Error("Failed to save dataset configuration");
+            }
+            if (response.ok) {
+                console.log("Dataset configuration saved successfully");
             }
         } catch (error) {
             console.error("Error saving dataset configuration:", error);
@@ -59,6 +63,9 @@ const TrainMainPage = ({ model }) => {
 
             if (!response.ok) {
                 throw new Error("Failed to save learner configuration");
+            }
+            if (response.ok) {
+                console.log("Learner configuration saved successfully");
             }
         } catch (error) {
             console.error("Error saving learner configuration:", error);
@@ -94,6 +101,7 @@ const TrainMainPage = ({ model }) => {
                         model={model}
                         config={datasetConfig}
                         setConfig={setDatasetConfig}
+                        save={saveDatasetConfig}
                     />
                 </div>
                 <div style={{ flex: 1 }}>
@@ -101,6 +109,7 @@ const TrainMainPage = ({ model }) => {
                         model={model}
                         config={learnerConfig}
                         setConfig={setLearnerConfig}
+                        save={saveLearnerConfig}
                     />
                 </div>
             </div>

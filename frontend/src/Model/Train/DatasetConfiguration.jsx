@@ -2,7 +2,7 @@ import { MenuItem, Select, FormControl, InputLabel } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import React from "react";
 
-const DatasetConfiguration = ({ config, setConfig }) => {
+const DatasetConfiguration = ({ config, setConfig, save }) => {
     const handleChange = (field) => (event) => {
         let value = event.target.value;
         // Convert to number for numeric fields
@@ -41,14 +41,14 @@ const DatasetConfiguration = ({ config, setConfig }) => {
                 type="number"
                 value={config.bs}
                 id="bs"
-                onChange={handleChange("bs")}
+                onChange={(e) => { handleChange("bs")(e); save(); }}
             />
             <TextField
                 label="Seed"
                 type="number"
                 value={config.seed}
                 id="seed"
-                onChange={handleChange("seed")}
+                onChange={(e) => { handleChange("seed")(e); save(); }}
             />
             <TextField
                 label="Validation Percentage"
@@ -56,14 +56,14 @@ const DatasetConfiguration = ({ config, setConfig }) => {
                 value={config.valid_pct * 100}
                 id="validPct"
                 InputProps={{ endAdornment: <span>%</span> }}
-                onChange={handleChange("valid_pct")}
+                onChange={(e) => { handleChange("valid_pct")(e); save(); }}
             />
             <TextField
                 label="Transformation Size"
                 type="number"
                 value={config.item_tfms.size}
                 id="transformationSize"
-                onChange={handleItemTfmsChange("size")}
+                onChange={(e) => { handleItemTfmsChange("size")(e); save(); }}
             />
             <FormControl>
                 <InputLabel id="resize-method-label">Resizing Method</InputLabel>
@@ -71,7 +71,7 @@ const DatasetConfiguration = ({ config, setConfig }) => {
                     labelId="resize-method-label"
                     label="Resizing Method"
                     value={config.item_tfms.resize_method}
-                    onChange={handleItemTfmsChange("resize_method")}
+                    onChange={(e) => { handleItemTfmsChange("resize_method")(e); save(); }}
                     displayEmpty
                     id="transformationResizingTypeSelect"
                     sx={{ minWidth: 120 }}

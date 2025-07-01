@@ -2,7 +2,7 @@ import { MenuItem, Select, FormControl, InputLabel } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import React from "react";
 
-const LearnerConfiguration = ({ config, setConfig }) => {
+const LearnerConfiguration = ({ config, setConfig, save }) => {
     const handleChange = (field) => (event) => {
         let value = event.target.value;
         // Convert to number for numeric fields
@@ -15,6 +15,11 @@ const LearnerConfiguration = ({ config, setConfig }) => {
         }));
     };
 
+    const handleAndSave = (field) => (event) => {
+        handleChange(field)(event);
+        save();
+    };
+
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: 400 }}>
             <h3>Learner Configuration</h3>
@@ -24,7 +29,7 @@ const LearnerConfiguration = ({ config, setConfig }) => {
                     labelId="arch-label"
                     label="Architecture"
                     value={config.arch}
-                    onChange={handleChange("arch")}
+                    onChange={handleAndSave("arch")}
                     displayEmpty
                     id="arch-select"
                 >
@@ -58,14 +63,14 @@ const LearnerConfiguration = ({ config, setConfig }) => {
                 type="number"
                 value={config.epoch}
                 id="epoch"
-                onChange={handleChange("epoch")}
+                onChange={handleAndSave("epoch")}
             />
             <TextField
                 label="Learning Rate"
                 type="number"
                 value={config.lr}
                 id="lr"
-                onChange={handleChange("lr")}
+                onChange={handleAndSave("lr")}
             />
         </div>
     );

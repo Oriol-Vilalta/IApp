@@ -6,6 +6,7 @@ import DatasetList from "./Datasets/DatasetList";
 import DatasetDetails from "./Datasets/DatasetDetails"; 
 import CreateObjectButton from "../Components/CreateObjectButton";
 import CreateDatasetModal from "./Datasets/CreateDatasetModal";
+import UploadDatasetButton from "./Datasets/UploadDatasetButton";
 
 const DatasetsPage = () => {
     const [datasets, setDatasets] = useState([]);
@@ -46,6 +47,7 @@ const DatasetsPage = () => {
                 <div className="main-list-header">
                     <TitleLabel text="Datasets" amount={datasets.length} />
                     <CreateObjectButton label="Create Dataset" setShowCreate={setShowCreateDataset}/>
+                    <UploadDatasetButton />
                 </div>
                 <DatasetList datasets={datasets} setActiveDataset={setActiveDataset}/>
             </div>

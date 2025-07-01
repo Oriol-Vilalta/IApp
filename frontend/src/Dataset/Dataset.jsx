@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 
 import TrainVocabList from "./Components/TrainVocab";
 import TestVocabList from "./Components/TestVocab";
+import Overview from "./Components/Overview";
 import TitleLabel from "../Components/TitleLabel";
 
 import "./Dataset.css";
@@ -52,6 +53,15 @@ const Dataset = () => {
                     <ul>
                         <li>
                             <button
+                                className={mode === "overview" ? "active" : ""}
+                                onClick={() => setMode("overview")}
+                                style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "inherit" }}
+                            >
+                                Overview
+                            </button>
+                        </li>
+                        <li>
+                            <button
                                 className={mode === "train" ? "active" : ""}
                                 onClick={() => setMode("train")}
                                 style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: "inherit" }}
@@ -72,9 +82,13 @@ const Dataset = () => {
                 </aside>
                 <main style={{ flex: 1, padding: "1rem" }}>
                     <TitleLabel text={dataset.name} />
-                    {mode === "train" ? (
+                    {mode === "overview" && (
+                        <Overview dataset={dataset} />
+                    )}
+                    {mode === "train" && (
                         <TrainVocabList dataset={dataset} />
-                    ) : (
+                    )}
+                    {mode === "test" && (
                         <TestVocabList dataset={dataset} />
                     )}
                 </main>

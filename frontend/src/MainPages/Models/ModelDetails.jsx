@@ -24,7 +24,7 @@ const ModelDetails = ({ activeModel }) => {
                         />
                     </div>
                     <div className="model-details-description">
-                        {activeModel.description || "No description"}
+                        {activeModel.description || ""}
                     </div>
                 </div>
                 <div className="model-details-columns model-details-right-half">

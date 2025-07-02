@@ -42,11 +42,11 @@
     transition: background 0.2s, color 0.2s;
 }
 
-.sidebar button:hover,
+.sidebar li:hover,
 .sidebar button.active,
 .sidebar button:focus {
-    background: #0e4638; 
-    color: #fff;
+
+    text-decoration: underline;
 }
 
 

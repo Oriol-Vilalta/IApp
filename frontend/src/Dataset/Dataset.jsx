@@ -47,10 +47,9 @@ const Dataset = () => {
 
     return (
         <div>
-            <div className="main-container" style={{ display: "flex" }}>
-                <aside className="sidebar">
-                    <h3>Dataset Images</h3>
-                    <ul>
+            <div className="main-container" style={{ display: "flex"}}>
+                <aside className="sidebar" style={{ paddingRight: "2rem", paddingTop: "1rem" }}>
+                    <ul style={{ paddingTop: "2rem"}}>
                         <li>
                             <button
                                 className={mode === "overview" ? "active" : ""}

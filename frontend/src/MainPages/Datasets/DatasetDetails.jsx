@@ -21,7 +21,7 @@ const DatasetDetails = ({ activeDataset }) => {
                 <h2>{name}</h2>
                 {trainVocabCount > 0 && (
                     <div>
-                        {trainVocabCount} different classes
+                        {trainVocabCount} different classes 
                     </div>
                 )}
                 <div>

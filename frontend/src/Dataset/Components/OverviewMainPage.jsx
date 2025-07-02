@@ -1,5 +1,7 @@
 import React from 'react';
 import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 const Overview = ({ dataset }) => {
     if (!dataset) {
@@ -54,8 +56,65 @@ const Overview = ({ dataset }) => {
         }
     }
 
+    // New grid card design for vocab lists
+    const renderVocabSection = (title, vocabList, type) => (
+        <Box sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>{title}</Typography>
+            {vocabList && vocabList.length > 0 ? (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 2,
+                        background: '#f7f7fa',
+                        borderRadius: 2,
+                        p: 2,
+                        boxShadow: 1,
+                    }}
+                >
+                    {vocabList.slice(0, 8).map((vocab, idx) => (
+                        <Box
+                            key={idx}
+                            sx={{
+                                width: 90,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                background: '#fff',
+                                borderRadius: 2,
+                                boxShadow: 2,
+                                p: 1,
+                                border: '1px solid #e0e0e0',
+                            }}
+                        >
+                            <img
+                                src={`http://127.0.0.1:5000/datasets/${dataset.id}/image/${type}/${vocab}`}
+                                alt={`${type} ${vocab}`}
+                                style={{
+                                    width: 60,
+                                    height: 60,
+                                    objectFit: 'cover',
+                                    borderRadius: 8,
+                                    border: '1px solid #ccc',
+                                    background: '#fafbfc'
+                                }}
+                            />
+                            <Typography variant="body2" sx={{ mt: 1, fontWeight: 500, textAlign: 'center' }}>
+                                {vocab}
+                            </Typography>
+                        </Box>
+                    ))}
+                </Box>
+            ) : (
+                <Typography color="text.secondary" sx={{ ml: 1 }}>
+                    No {type} vocabulary available.
+                </Typography>
+            )}
+        </Box>
+    );
+
     return (
-        <div className="dataset-overview">
+        <div className="dataset-overview" style={{ paddingLeft: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <h2>Dataset Overview</h2>
                 <div>
@@ -76,46 +135,13 @@ const Overview = ({ dataset }) => {
                     </Button>
                 </div>
             </div>
-            <ul>
-                <li><strong>Name:</strong> {dataset.name}</li>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
                 <li><strong>ID:</strong> {dataset.id}</li>
                 <li>
-                    <strong>Training:</strong>
-                    {dataset.train_vocab && dataset.train_vocab.length > 0 ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 80px)', gap: '8px', marginTop: '8px' }}>
-                            {dataset.train_vocab.slice(0, 8).map((vocab, idx) => (
-                                <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <img
-                                        src={`http://127.0.0.1:5000/datasets/${dataset.id}/image/train/${vocab}`}
-                                        alt={`Train ${vocab}`}
-                                        style={{ width: 70, height: 70, objectFit: 'cover', borderRadius: 4, border: '1px solid #ccc' }}
-                                    />
-                                    <span style={{ marginTop: 4, fontSize: 12 }}>{vocab}</span>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <span> No training vocabulary available.</span>
-                    )}
+                    {renderVocabSection("Training Vocabulary", dataset.train_vocab, "train")}
                 </li>
                 <li>
-                    <strong>Testing:</strong>
-                    {dataset.test_vocab && dataset.test_vocab.length > 0 ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 80px)', gap: '8px', marginTop: '8px' }}>
-                            {dataset.test_vocab.slice(0, 8).map((vocab, idx) => (
-                                <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    <img
-                                        src={`http://127.0.0.1:5000/datasets/${dataset.id}/image/test/${vocab}`}
-                                        alt={`Test ${vocab}`}
-                                        style={{ width: 70, height: 70, objectFit: 'cover', borderRadius: 4, border: '1px solid #ccc' }}
-                                    />
-                                    <span style={{ marginTop: 4, fontSize: 12 }}>{vocab}</span>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <span> No test vocabulary available.</span>
-                    )}
+                    {renderVocabSection("Testing Vocabulary", dataset.test_vocab, "test")}
                 </li>
             </ul>
         </div>

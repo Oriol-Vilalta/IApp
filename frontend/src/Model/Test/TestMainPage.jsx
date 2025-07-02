@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { useState } from "react";
 
-const TestMainPage = ({ model }) => {
+const TestMainPage = ({ model, fetchModel }) => {
     const [loading, setLoading] = useState(false);
 
     const runTests = async () => {
@@ -23,6 +23,7 @@ const TestMainPage = ({ model }) => {
 
         await res.json();
         setLoading(false);
+        fetchModel(); 
     };
 
     return (

@@ -2,11 +2,18 @@ import { useEffect, useState } from "react";
 import "../MainPage.css";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { Button } from "@mui/material";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import Divider from "@mui/material/Divider";
+import { Box } from "@mui/system";
 
 const DatasetMainPage = ({ model, setHasTest }) => {
     const [datasets, setDatasets] = useState([]);
     const [dataset, setDataset] = useState(null);
     const [selectedDatasetId, setSelectedDatasetId] = useState("");
+    const [pendingDatasetId, setPendingDatasetId] = useState("");
+    const [confirmationMsg, setConfirmationMsg] = useState("");
 
 
     const fetchDatasets = async () => {
@@ -22,14 +29,15 @@ const DatasetMainPage = ({ model, setHasTest }) => {
                 const data = await response.json();
                 setDatasets(data.datasets);
 
-                // Only set selectedDatasetId if the model's dataset_id is in the list
                 const defaultId = model?.loader?.dataset_id;
                 const found = data.datasets.find(ds => ds.id === defaultId);
                 if (found) {
                     setSelectedDatasetId(defaultId);
+                    setPendingDatasetId(defaultId);
                     fetchDataset(defaultId);
                 } else if (data.datasets.length > 0) {
                     setSelectedDatasetId(data.datasets[0].id);
+                    setPendingDatasetId(data.datasets[0].id);
                     fetchDataset(data.datasets[0].id);
                 }
             } else {
@@ -73,9 +81,14 @@ const DatasetMainPage = ({ model, setHasTest }) => {
 
             if (response.status !== 200) {
                 const errorData = await response.json();
-                alert(errorData.message);
+                setConfirmationMsg(errorData.message || "Failed to update dataset.");
+            } else {
+                setConfirmationMsg("Changes applied successfully.");
+                setSelectedDatasetId(id);
+                await fetchDataset(id);
             }
         } catch (error) {
+            setConfirmationMsg("Error while selecting dataset.");
             console.error('Error while selecting dataset: ', error);
         }
     };
@@ -92,15 +105,15 @@ const DatasetMainPage = ({ model, setHasTest }) => {
                 const data = await response.json();
                 setDatasets(data.datasets);
 
-                // Only set selectedDatasetId if the model's dataset_id is in the list
                 const defaultId = model?.loader?.dataset_id;
-                console.log("Default Dataset ID: ", model.loader.dataset_id);
                 const found = data.datasets.find(ds => ds.id === defaultId);
                 if (found) {
                     setSelectedDatasetId(defaultId);
+                    setPendingDatasetId(defaultId);
                     fetchDataset(defaultId);
                 } else if (data.datasets.length > 0) {
                     setSelectedDatasetId(data.datasets[0].id);
+                    setPendingDatasetId(data.datasets[0].id);
                     fetchDataset(data.datasets[0].id);
                 }
             } else {
@@ -110,11 +123,17 @@ const DatasetMainPage = ({ model, setHasTest }) => {
         load();
     }, []);
 
-    const handleChange = async (e) => {
-        const id = e.target.value;
-        setSelectedDatasetId(id);
-        selectDataset(id);
-        await fetchDataset(id);
+    const handleChange = (e) => {
+        setPendingDatasetId(e.target.value);
+        setConfirmationMsg("");
+    };
+
+    const handleApply = async () => {
+        if (pendingDatasetId && pendingDatasetId !== selectedDatasetId) {
+            await selectDataset(pendingDatasetId);
+        } else {
+            setConfirmationMsg("No changes to apply.");
+        }
     };
 
     return (
@@ -128,17 +147,19 @@ const DatasetMainPage = ({ model, setHasTest }) => {
                     display: "flex",
                     alignItems: "center",
                     width: "100%",
-                    justifyContent: "space-between"
+                    gap: 16,
+                    maxWidth: 600,
+                    marginBottom: 16
                 }}
             >
                 {datasets.length > 0 && (
-                    <FormControl style={{ flex: 1, marginRight: 16, maxWidth: "400px" }}>
+                    <FormControl style={{ flex: 1, maxWidth: "400px" }}>
                         <InputLabel id="dataset-select-label">Select Dataset</InputLabel>
                         <Select
                             labelId="dataset-select-label"
                             id="dataset-select"
                             label="Select Dataset"
-                            value={selectedDatasetId}
+                            value={pendingDatasetId}
                             onChange={handleChange}
                             disabled={model.state === "IN_TRAINING"}
                         >
@@ -150,41 +171,80 @@ const DatasetMainPage = ({ model, setHasTest }) => {
                         </Select>
                     </FormControl>
                 )}
-                {/* <Button
+                <Button
                     variant="contained"
                     color="primary"
                     style={{
                         height: "40px",
                         minHeight: "40px",
-                        minWidth: "150px",
-                        width: "150px"
+                        minWidth: "120px",
+                        width: "120px"
                     }}
+                    onClick={handleApply}
+                    disabled={
+                        !pendingDatasetId ||
+                        model.state === "IN_TRAINING"
+                    }
                 >
-                    Add Dataset
-                </Button> */}
+                    Apply
+                </Button>
             </div>
-            <div className="dataset-details">
+            {confirmationMsg && (
+                <div style={{ marginTop: 16, color: "#388e3c", fontWeight: 500 }}>
+                    {confirmationMsg}
+                </div>
+            )}
+            <div className="dataset-details" style={{ marginTop: 32, maxWidth: 600 }}>
                 {dataset ? (
-                    <div>
-                        <h3>Dataset Details</h3>
-                        <div><strong>ID:</strong> {dataset.id}</div>
-                        <div><strong>Name:</strong> {dataset.name}</div>
-                        <div>
-                            <strong>Number of Labels:</strong> {dataset.train_vocab ? dataset.train_vocab.length : 0}
-                        </div>
-                        <div><strong>Has Test Data:</strong> {dataset.has_test ? "Yes" : "No"}</div>
-                        <div>
-                            <strong>Label list ({dataset.train_vocab.length}): </strong>
-                            <span>
-                                {dataset.train_vocab && dataset.train_vocab.length > 0
-                                    ? dataset.train_vocab.join(", ")
-                                    : "None"}
-                            </span>
-                        </div>
-
-                    </div>
+                    <Card sx={{ background: "#f9f9fb", boxShadow: 2 }}>
+                        <CardContent>
+                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+                                Dataset Details
+                            </Typography>
+                            <Divider sx={{ mb: 2 }} />
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", rowGap: 10, columnGap: 16 }}>
+                                <Typography sx={{ fontWeight: 500 }}>ID:</Typography>
+                                <Typography color="text.secondary">{dataset.id}</Typography>
+                                <Typography sx={{ fontWeight: 500 }}>Name:</Typography>
+                                <Typography color="text.secondary">{dataset.name}</Typography>
+                                <Typography sx={{ fontWeight: 500 }}>Number of Labels:</Typography>
+                                <Typography color="text.secondary">{dataset.train_vocab ? dataset.train_vocab.length : 0}</Typography>
+                                <Typography sx={{ fontWeight: 500 }}>Has Test Data:</Typography>
+                                <Typography color="text.secondary">{dataset.has_test ? "Yes" : "No"}</Typography>
+                                <Typography sx={{ fontWeight: 500, alignSelf: "start" }}>Label List:</Typography>
+                                <Box>
+                                    {dataset.train_vocab && dataset.train_vocab.length > 0 ? (
+                                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                                            {dataset.train_vocab.map((label, idx) => (
+                                                <Box
+                                                    key={label}
+                                                    sx={{
+                                                        px: 1.5,
+                                                        py: 0.5,
+                                                        background: "#e3e6f0",
+                                                        borderRadius: 2,
+                                                        fontSize: 14,
+                                                        mb: 0.5,
+                                                        mr: 0.5,
+                                                        color: "#333",
+                                                        fontWeight: 500,
+                                                    }}
+                                                >
+                                                    {label}
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    ) : (
+                                        <Typography color="text.secondary">None</Typography>
+                                    )}
+                                </Box>
+                            </div>
+                        </CardContent>
+                    </Card>
                 ) : (
-                    <p>Select a dataset to view its details.</p>
+                    <Typography sx={{ mt: 2 }} color="text.secondary">
+                        Select a dataset to view its details.
+                    </Typography>
                 )}
             </div>
         </div>

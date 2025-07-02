@@ -58,11 +58,11 @@ const Model = () => {
             )}
 
             {mode === "Train" && (
-                <TrainMainPage model={model}/>
+                <TrainMainPage model={model} fetchModel={fetchModel}/>
             )}
 
             {mode === "Test" && (
-                <TestMainPage model={model} hasTest={hasTest}/>
+                <TestMainPage model={model} hasTest={hasTest} fetchModel={fetchModel}/>
             )}
 
             {mode === "Predict" && (

@@ -62,7 +62,7 @@ const DatasetConfiguration = ({ config, setConfig, save }) => {
     return (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2, maxWidth: 420, p: 2, background: "#f9f9fb", borderRadius: 2, boxShadow: 2 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                Data Configuration
+                Loader Configuration
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <Typography sx={{ fontWeight: 500, minWidth: 140 }}>

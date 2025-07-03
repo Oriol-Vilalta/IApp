@@ -73,6 +73,7 @@ def load_all_models():
     total_models = 0
 
     for dir in os.listdir(MODELS_PATH):
+        total_models += 1
         models[dir] = get_model_from_id(dir)
         logger.info("-\tModel: " + models[dir].name)
 

@@ -1,8 +1,14 @@
 import os
+"""Note:
+    Parts of this code are adapted from the book "Deep Learning for Coders with fastai and PyTorch"
+    by Jeremy Howard and Sylvain Gugger.
+"""
+
 import matplotlib.pyplot as plt
 import torch
 from fastai.torch_basics import TensorImage
 from fastcore.basics import first
+
 
 
 class Hook:

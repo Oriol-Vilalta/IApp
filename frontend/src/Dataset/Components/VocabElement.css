@@ -1,0 +1,4 @@
+.MuiListItem-root:hover {
+    background-color: #acbdbc !important; /* or any darker shade you prefer */
+    transition: background 0.2s;
+}

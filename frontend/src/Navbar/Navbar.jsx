@@ -4,13 +4,19 @@ import Toolbar from '@mui/material/Toolbar';
 import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 
+import "./Navbar.css";
+
 const pages = ['models', 'datasets'];
 
 
 function Navbar() {
 
 return (
-    <AppBar position="static">
+    <AppBar 
+        position="static" 
+        className='navbar'
+        sx={{ backgroundColor: '#135E4B' }}
+    >
         <Container maxWidth="100%">
             <Toolbar disableGutters>
             

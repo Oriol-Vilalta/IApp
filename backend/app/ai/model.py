@@ -73,6 +73,7 @@ def load_all_models():
     total_models = 0
 
     for dir in os.listdir(MODELS_PATH):
+        total_models += 1
         models[dir] = get_model_from_id(dir)
         logger.info("-\tModel: " + models[dir].name)
 
@@ -120,15 +121,15 @@ def upload_model(stream):
 
     with zipfile.ZipFile(stream, 'r') as zf:
         zf.extractall(path)
-        with open(os.path.join(MODELS_PATH, id, 'model.json'), 'r') as file:
+        with open(os.path.join(MODELS_PATH, model_id, 'model.json'), 'r') as file:
             name = json.load(file)['name']
         while not verify_name(name + mod):
             it += 1
             mod = f" ({it})"
 
-        models[id] = get_model_from_id(id)
-        models[id].name = name + mod
-        models[id].save()
+        models[model_id] = get_model_from_id(model_id)
+        models[model_id].name = name + mod
+        models[model_id].save()
 
 
 class Model:
@@ -290,6 +291,12 @@ class Model:
         self.state = "DATASET"
         self.learner = PretrainedLearner(self.loader, self.path)
         self.save()
+    
+    def heatmap(self, img, path):
+        if self.state == "TRAINED":
+            self.learner.create_heatmap(img, path)
+        else:
+            return "Model isn't ready to create heatmap"
 
     def remove_dataset(self):
         if os.path.exists(os.path.join(MODELS_PATH, self.id, MODEL_FILENAME)):

@@ -88,6 +88,7 @@ def upload_dataset(stream):
 
         datasets[id] = get_dataset_by_id(id)
         datasets[id].name = name + mod
+        datasets[id].path = path
         datasets[id].save()
 
 
@@ -255,11 +256,15 @@ class Dataset:
     def remove_dataset(self):
         shutil.rmtree(os.path.join(self.path))
 
-    def gen_profile_image(self):
-        if not os.path.exists(os.path.join(self.path, "profile.png")) and len(self.train_vocab) > 0:
-            label = random.choice(os.listdir(os.path.join(self.path, "train")))
-            image_name = random.choice(os.listdir(os.path.join(self.path, "train", label)))
-            shutil.copyfile(os.path.join(self.path, "train", label, image_name), os.path.join(self.path, "profile.png"))
+    def get_first_image_name(self, label, mode="train"):
+        if self.path is None or label is None or mode is None:
+            return None
+        dir_path = os.path.join(self.path, mode, label)
+        if os.path.exists(dir_path):
+            images = os.listdir(dir_path)
+            if images:
+                return os.path.join(dir_path, images[0])
+        return None
 
     def compress(self):
         zip_buffer = io.BytesIO()

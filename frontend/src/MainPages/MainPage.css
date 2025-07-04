@@ -1,0 +1,16 @@
+.main-list-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin-left: 8vw;
+    margin-right: 8vw;
+    box-sizing: border-box;
+}
+
+.main-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+}
+

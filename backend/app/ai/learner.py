@@ -210,11 +210,12 @@ class PretrainedLearner:
                 get_prob_graph(probs, self.learner.dls.vocab, path)
             if do_grad_cam:
                 grad_cam(self.learner, img, self.loader.to_dls(), path)
-            if cam:
-                heatmap_cam(self.learner, img, self.loader.to_dls(), path)
             return pred
         else:
             return "Learner not loaded"
+        
+    def create_heatmap(self, img, path):
+        grad_cam(self.learner, img, self.loader.to_dls(), path)
 
     def get_training_time(self):
         if self.training_time:

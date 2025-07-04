@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, Response
+from flask import Blueprint, jsonify, request, Response, send_file
 from flask_cors import CORS
 
 from ..ai.dataset import *
@@ -148,6 +148,20 @@ def download_a_dataset(id):
         response.headers['Content-Disposition'] = f'attachment; filename={dataset.name}.zip'
         logger.debug(f"{request.path}: Dataset downloaded successfully")
         return response, 200
+    else:
+        logger.error(f"{request.path}: Dataset doesn't exist.")
+        return jsonify({"error": "Dataset not found"}), 404
+
+
+# Downloads the first image of a dataset.
+@blueprint.route('/datasets/<string:id>/image/<string:mode>/<string:label>', methods=['GET'])
+def get_first_image(id, mode, label):
+    logger.info(f"Retrieving train image for label '{label}' in dataset '{id}'")
+    dataset = get_dataset(id)
+    if dataset:
+        name = dataset.get_first_image_name(label, mode)
+        logger.debug(name)
+        return send_file(name, mimetype='image/png')
     else:
         logger.error(f"{request.path}: Dataset doesn't exist.")
         return jsonify({"error": "Dataset not found"}), 404

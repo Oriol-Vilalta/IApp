@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request, send_file, Response
 from flask_cors import CORS
 from werkzeug.exceptions import BadRequestKeyError
 from fastai.vision.core import PILImage
+import os
 
 from ..ai.model import *
 from ..utils.logger import logger
@@ -170,13 +171,23 @@ def test_a_model(id):
 # PREDICT - Predict an image using the model.
 @blueprint.route('/models/<string:id>/predict', methods=['POST'])
 def predict_an_image(id):
+    logger.info(f"{request.path}: Received prediction request for model {id}")
+
     model = get_model(id)
 
     # Verify models id
     if not model:
         logger.error(f"{request.path}: Model doesn't exist.")
         return jsonify({'error': 'Model does not exist'}), 404
-    
+
+    # Delete previous grad-cam.png and prob_graph.png if they exist
+    gradcam_path = os.path.join(model.path, "grad-cam.png")
+    prob_graph_path = os.path.join(model.path, "prob_graph.png")
+    for file_path in [gradcam_path, prob_graph_path]:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            logger.info(f"{request.path}: Deleted file {file_path}")
+
     # Check if a file it's been uploaded
     try:
         file = request.files['file']
@@ -192,9 +203,12 @@ def predict_an_image(id):
     if not file.filename.endswith(('.png', '.jpg', '.jpeg')):
         logger.error(f"{request.path}: File type not supported, name: {file.filename}")
         return jsonify({'error': 'File type not supported'}), 400
-    
+
+    logger.info(f"{request.path}: File '{file.filename}' received for prediction.")
+
     # Save image used for prediction
     file.save(model.path + "/predict.jpg")
+    logger.info(f"{request.path}: Saved prediction image to {model.path + '/predict.jpg'}")
     img = PILImage.create(file.stream)
 
     # Verify type of prediction
@@ -208,9 +222,11 @@ def predict_an_image(id):
     except BadRequestKeyError:
         prob_graph = False
 
-    # Do prediction and send response
+    logger.info(f"{request.path}: Starting prediction (grad_cam={grad_cam}, prob_graph={prob_graph})")
     res = model.predict(img, grad_cam=grad_cam, prob_graph=prob_graph)
-    logger.debug(f"{request.path}: Prediciton done!")
+    logger.info(f"{request.path}: Prediction done for model {id}")
+    logger.debug(f"{request.path}: Prediction result: {res}")
+
     return jsonify({'result': res}), 200
 
 
@@ -224,11 +240,28 @@ def get_the_heatmap(id):
     model = get_model(id)
     if model:
         logger.debug(f"{request.path}: Heatmap sended successfully!")
+        model.heatmap(PILImage.create(os.path.join(model.path, "predict.jpg")), model.path)
         return send_file(os.path.join(model.path, "heatmap.png"), mimetype='image/png')
     else:
         logger.error(f"{request.path}: Model doesn't exist.")
         return jsonify({'error': 'Model does not exist'}), 404
 
+
+# DOWNLOAD HEATMAP - Download the heatmap image file
+@blueprint.route('/models/<string:id>/heatmap/download', methods=['GET'])
+def download_heatmap(id):
+    model = get_model(id)
+    if not model:
+        logger.error(f"{request.path}: Model doesn't exist.")
+        return jsonify({'error': 'Model does not exist'}), 404
+
+    heatmap_path = os.path.join(model.path, "heatmap.png")
+    if os.path.exists(heatmap_path):
+        logger.debug(f"{request.path}: Heatmap downloaded successfully.")
+        return send_file(heatmap_path, mimetype='image/png', as_attachment=True, download_name='heatmap.png')
+    else:
+        logger.error(f"{request.path}: Heatmap does not exist.")
+        return jsonify({'error': 'Heatmap does not exist'}), 404
 
 # GRADCAM - Retrieves the gradcam
 @blueprint.route('/models/<string:id>/gradcam', methods=['GET'])
@@ -285,8 +318,9 @@ def change_a_loader_property(id):
     model = get_model(id)
     if model:
         for key, value in request.json.items():
-            logger.debug(f"{request.path}: Property {key} changed to {value}")
+            logger.info(f"{request.path}: Changing loader property '{key}' to '{value}' for model {id}")
             model.change_loader_property(key, value)
+        logger.info(f"{request.path}: Loader properties changed successfully for model {id}")
         return "", 200
     else:
         logger.error(f"{request.path}: Model doesn't exist.")
@@ -299,13 +333,13 @@ def change_a_learner_property(id):
     model = get_model(id)
     if model:
         for key, value in request.json.items():
-            logger.debug(f"{request.path}: Property {key} changed to {value}")
+            logger.info(f"{request.path}: Changing learner property '{key}' to '{value}' for model {id}")
             model.change_learner_property(key, value)
+        logger.info(f"{request.path}: Learner properties changed successfully for model {id}")
         return "", 200
     else:
         logger.error(f"{request.path}: Model doesn't exist.")
         return jsonify({'error': 'Model does not exist'}), 404
-    
 #
 # OTHER FEATURES
 #

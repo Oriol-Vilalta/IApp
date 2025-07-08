@@ -83,7 +83,7 @@ def upload_new_model():
         return jsonify({"eror": "File type not supported"}), 400
 
     logger.debug(f"{request.path}: Uploaded model")
-    upload_model(file.stream)
+    upload_model(file)
     return jsonify({"message": "Data uploaded successfully"}), 200
 
 
@@ -340,16 +340,4 @@ def change_a_learner_property(id):
     else:
         logger.error(f"{request.path}: Model doesn't exist.")
         return jsonify({'error': 'Model does not exist'}), 404
-#
-# OTHER FEATURES
-#
-
-# Change the name to the model
-@blueprint.route('/models/<string:id>/change/name', methods=['PUT'])
-def update_model_by_id(id):
-    message, code = change_name(id, request.args['name'])
-    if code == 200:
-        return jsonify({'message': message}), code
-    else:
-        return jsonify({'error': message}), code
 

@@ -1,16 +1,16 @@
 import os
-"""Note:
-    Parts of this code are adapted from the book "Deep Learning for Coders with fastai and PyTorch"
-    by Jeremy Howard and Sylvain Gugger.
-"""
-
 import matplotlib.pyplot as plt
 import torch
 from fastai.torch_basics import TensorImage
 from fastcore.basics import first
 
+# This file contains utility functions for visualizing model predictions and gradients.
 
+# -------------------
+# HOOKS
+# -------------------
 
+# Hooks are used to capture intermediate activations or gradients from model layers during forward or backward passes.
 class Hook:
     def __init__(self, m):
         self.hook = m.register_forward_hook(self.hook_func)
@@ -22,6 +22,8 @@ class Hook:
     def __exit__(self, *args): self.hook.remove()
 
 
+# HookBwd is a specialized hook for capturing gradients during the backward pass.
+# This is useful for techniques like Grad-CAM where gradients are needed to compute the class activation maps.
 class HookBwd:
     def __init__(self, m):
         self.hook = m.register_backward_hook(self.hook_func)
@@ -32,7 +34,12 @@ class HookBwd:
 
     def __exit__(self, *args): self.hook.remove()
 
+# -------------------
+# HEATMAPS 
+# -------------------
 
+# UNUSED
+# This function generates a heatmap using Class Activation Mapping (CAM) for a given image and model.
 def heatmap_cam(learner, img, dls, path):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # Move model to device
@@ -67,22 +74,32 @@ def heatmap_cam(learner, img, dls, path):
     plt.close()
 
 
+"""Note:
+    Parts of this code are adapted from the book "Deep Learning for Coders with fastai and PyTorch"
+    by Jeremy Howard and Sylvain Gugger.
+"""
+
+# grad_cam generates a Grad-CAM heatmap for a given image and model.
+# It uses hooks to capture activations and gradients from the target layer during forward and backward passes.
+# The resulting heatmap highlights regions in the image that are important for the model's prediction.
 def grad_cam(learner, img, dls, path):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     learner.model.to(device)
     x, = first(dls.test_dl([img]))
     x = x.to(device)
-    cls = 1
+    cls = 1  # Index of the class to visualize (can be parameterized)
     with HookBwd(learner.model[0]) as hookg:
         with Hook(learner.model[0]) as hook:
             output = learner.model.eval()(x)
-            act = hook.stored
-        output[0, cls].backward()
-        grad = hookg.stored
+            act = hook.stored  # Activations from the forward pass
+        output[0, cls].backward()  # Backward pass for the target class
+        grad = hookg.stored  # Gradients from the backward pass
 
+    # Compute weights and Grad-CAM map
     w = grad[0].mean(dim=[1, 2], keepdim=True)
     cam_map = (w * act[0]).sum(0)
 
+    # Visualize the heatmap over the input image
     _, ax = plt.subplots()
     x_dec = TensorImage(dls.train.decode((x.cpu(),))[0][0])
     x_dec.show(ctx=ax)
@@ -91,7 +108,11 @@ def grad_cam(learner, img, dls, path):
     plt.savefig(os.path.join(path, "grad-cam"))
     plt.close()
 
+# -------------------
+# PROBABILITY GRAPH
+# -------------------
 
+# It is called probability graph to the distribution of the probabilities of the classes on a prediction.
 def get_prob_graph(probs, vocab, path):
     plt.figure(figsize=(7, 4))
     plt.barh(vocab, probs, color='skyblue')

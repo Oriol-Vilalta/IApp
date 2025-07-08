@@ -135,7 +135,7 @@ def upload_dataset_full_dataset():
         return jsonify({"error": "File type not supported"}), 400
 
     logger.debug(f"{request.path}: Uploaded dataset")
-    upload_dataset(file.stream)
+    upload_dataset(file)
     return jsonify({"message": "Data uploaded successfully"}), 200
 
 

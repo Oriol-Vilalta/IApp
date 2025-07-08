@@ -16,12 +16,41 @@ import random
 import shutil
 from datetime import datetime
 
-models = dict()
-
+# Constants
 RESULTS_FILE = "results.json"
 MODEL_FILENAME = "model.pkl"
 
+# models is a dictionary that holds all the models loaded in memory.
+# The key is the model ID and the value is the Model object.
+models = dict()
 
+# -------------------------
+# MODEL UTILITIES
+# -------------------------
+
+# Function to verify if a dataset name is unique, since model names must be unique.
+def verify_name(new_name):
+    models_lst = list(models.values())
+    for model in models_lst:
+        if new_name == model.name or new_name == "":
+            return False
+
+    return True
+
+
+# Function to generate a unique dataset ID
+def generate_model_id():
+    tmp = ''.join([random.choice(string.ascii_letters + string.digits) for _ in range(8)])
+    if models.get(tmp) is not None:
+        return generate_model_id()
+    return tmp
+
+# -------------------------
+# LOAD MODELS
+# -------------------------
+
+# Loads a model from the file system based on its ID.
+# It reads the model's metadata from a JSON file and initializes a Model object with that data
 def get_model_from_id(id):
     with open(os.path.join(MODELS_PATH, id, 'model.json'), 'r') as file:
         data = json.load(file)
@@ -30,6 +59,7 @@ def get_model_from_id(id):
     model.state = data['state']
     model.last_accessed = datetime.strptime(data['last_accessed'], '%Y-%m-%d %H:%M:%S')
 
+    # The loader data is loaded from the model's metadata.
     dataset_data = data['loader']
     model.loader.item_tfms = dataset_data['item_tfms']
     model.loader.valid_pct = dataset_data['valid_pct']
@@ -37,7 +67,7 @@ def get_model_from_id(id):
     model.loader.seed = dataset_data['seed']
     model.loader.dataset = get_dataset(dataset_data['dataset_id'])
 
-
+    # Learner data is loaded from the model's metadata.
     learner_data = data['learner']
     model.learner.type = learner_data['type']
     model.learner.epoch = learner_data['epoch']
@@ -51,23 +81,8 @@ def get_model_from_id(id):
     return model
 
 
-def verify_name(new_name):
-    models_lst = list(models.values())
-    for model in models_lst:
-        if new_name == model.name or new_name == "":
-            return False
-
-    return True
-
-
-def generate_model_id():
-    tmp = ''.join([random.choice(string.ascii_letters + string.digits) for _ in range(8)])
-    if models.get(tmp) is not None:
-        return generate_model_id()
-    return tmp
-
-# START
-# Load model data
+# This function loads all models from the file system into memory.
+# It loads each model's metadata and initializes a Model object for each one.
 def load_all_models():
     logger.info("Loading Models...")
     total_models = 0
@@ -79,16 +94,20 @@ def load_all_models():
 
     logger.info("Loaded " + str(total_models) + " models.")
 
+# ---------------------------
+# CRUD FUNCTIONS
+# ---------------------------
 
+# Function to retrieve a model by its ID from the global models dictionary
+# the difference between this and get_model_from_id is that this function recalls the model from the global dictionary
 def get_model(id):
     try:
         return models[id]
     except KeyError:
         return None
 
-
+# Function to create a new model with a unique name.
 def create_model(name):
-
     if verify_name(name):
         model_id = generate_model_id()
         model = Model(name, model_id, save_on_create=True)
@@ -97,21 +116,10 @@ def create_model(name):
     else:
         return None
 
-
-def change_name(id, new_name):
-    if verify_name(new_name):
-        model = get_model(id)
-        if model:
-            model.name = new_name
-            model.save()
-            return "Model's name changed", 200
-        else:
-            return "Model not found", 404
-    else:
-        return "Name already in use", 400
-
-
+# Function to upload a model from a zip file stream.
+# the use of stream allows for uploading models directly from a file-like object, such as a file upload in a web application.
 def upload_model(stream):
+    # Generate a unique model ID and create the model directory
     model_id = generate_model_id()
     path = os.path.join(MODELS_PATH, model_id)
     os.makedirs(path, exist_ok=True)
@@ -119,20 +127,31 @@ def upload_model(stream):
     it = 0
     mod = ""
 
+    # Extract the uploaded zip file into the model directory
     with zipfile.ZipFile(stream, 'r') as zf:
         zf.extractall(path)
+        # Read the model name from the extracted model.json
         with open(os.path.join(MODELS_PATH, model_id, 'model.json'), 'r') as file:
             name = json.load(file)['name']
+        # Ensure the model name is unique by appending a suffix if needed
         while not verify_name(name + mod):
             it += 1
             mod = f" ({it})"
 
+        # Load the model into memory and update its name if modified
         models[model_id] = get_model_from_id(model_id)
         models[model_id].name = name + mod
         models[model_id].save()
 
+# -----------------------------
+# MODEL CLASS
+# -----------------------------
+
+# The Model class represents a machine learning model with its associated metadata and functionality.
+# It includes methods for training, testing, saving, and manipulating the model's state.
 
 class Model:
+    # The constructor initializes the model with a name, ID, and optional flag to save on creation.
     def __init__(self, name, id, save_on_create=False):
         self.name = name
         self.id = id
@@ -146,9 +165,15 @@ class Model:
 
         self.last_accessed = datetime.now()
 
+        # Used when creating a new model, not when loading (the start of the application).
         if save_on_create:
             self.save()
 
+    # -----------------------
+    # MODEL METADATA
+    # -----------------------
+
+    # The to_dict method initializes a Model instance from a dictionary representation.
     def to_dict(self):
         return {
             "name": self.name,
@@ -159,15 +184,24 @@ class Model:
             "last_accessed": self.last_accessed.strftime('%Y-%m-%d %H:%M:%S')
         }
 
+    # The get_data function is mostly used to retrieve the model's metadata.
+    # It calls the to_dict method and updates the last accessed time.
     def get_data(self):
         self.last_accessed = datetime.now()
         self.save()
         return self.to_dict()
 
+    # The save method saves the model's metadata to a JSON file.
     def save(self):
         self.last_accessed = datetime.now()
         json.dump(self.to_dict(), open(os.path.join(self.path, "model.json"), "w"), indent=4)
 
+    # ---------------------------
+    # COMPRESS MODEL
+    # ---------------------------
+
+    # The compress method creates a zip file of the model's directory.
+    # Used to download the model as a single file file.
     def compress(self):
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
@@ -176,79 +210,21 @@ class Model:
                     file_path = os.path.join(root, file)
                     zip_file.write(file_path, os.path.relpath(file_path, self.path))
         return zip_buffer.getvalue()
+    
+    # ---------------------------
+    # LOADER REALTTED FUNCTIONS
+    # ---------------------------
 
+    # The assign_dataset method assigns a dataset to the model's loader.
+    # Additionally, it updates the model's state to "DATASET".
     def assign_dataset(self, id):
         res = self.loader.assign_dataset(id)
         self.state = "DATASET"
         self.save()
         return res
-
-    def train(self):
-        if self.state == "DATASET":
-            self.state = "IN_TRAINING"
-            self.learner.train()
-            if self.state == "IN_TRAINING":
-                self.state = "TRAINED"
-
-        elif self.state == "NEW":
-            return "Dataset not loaded yet. Load data to start training."
-        elif self.state == "TRAINED":
-            return "Model already trained."
-        self.save()
-
-
-    def test(self):
-        if self.state == "TRAINED" and self.loader.has_test():
-            self.learner.test()
-            self.save()
-            return self.learner.test_accuracy, self.learner.test_loss
-        elif self.state == "NEW":
-            return "Dataset not loaded yet. Load data to start testing."
-        elif self.state == "DATASET":
-            return "Model not trained yet. Train the model."
-        elif not self.loader.has_test():
-            return "The model doesn't have a test set."
-        else:
-            return "UNKNOWN STATE"
-
-    def generate_confusion_matrix(self):
-        if self.state == "TRAINED":
-            interp = ClassificationInterpretation.from_learner(self.learner.learner)
-            interp.plot_confusion_matrix(figsize=(7, 7), dpi=80)
-
-    def predict(self, img, prob_graph=False, cam=False, grad_cam=False):
-        if self.state == "TRAINED":
-            return self.learner.predict(img, prob_graph, cam, grad_cam, self.path)
-        else:
-            return "Model isn't ready to predict"
-
-    def get_probabilities(self, img):
-        if self.state == "TRAINED":
-            return self.learner.predict(img)[2]
-        else:
-            return "Model isn't ready to predict"
-
-    def get_training_results(self):
-        with open(os.path.join(self.path, RESULTS_FILE), 'r') as f:
-            return json.load(f)
-
-    def change_learner_property(self, prop, value):
-        changed = False
-        if prop == "epoch" and isinstance(value, int):
-            self.learner.epoch = value
-            changed = True
-        elif prop == "lr" and isinstance(value, float):
-            self.learner.lr = value
-            changed = True
-        elif prop == "arch" and isinstance(value, str):
-            self.learner.arch = value
-            changed = True
-
-        if changed and (self.state == "TRAINED" or self.state == "IN_TRAINING"):
-            self.state = "DATASET"
-        self.save()
-        return changed
-
+    
+    # For both the loader and learner, the change_property methods allow for modifying their properties.
+    # If the property is changed, the model's state is updated to "DATASET" since the model is not coherent to the metadata.
     def change_loader_property(self, prop, value):
         changed = False
 
@@ -271,11 +247,102 @@ class Model:
             self.loader.modified = True
         self.save()
         return changed
+    
+    # ---------------------------
+    # LEARNER RELATED FUNCTIONS
+    # ---------------------------
 
+    # The change_learner_property method allows for modifying the learner's properties.
+    # If the property is changed, the model's state is updated to "DATASET" since the trained model is not coherent to the saved metadata.
+    def change_learner_property(self, prop, value):
+        changed = False
+        if prop == "epoch" and isinstance(value, int):
+            self.learner.epoch = value
+            changed = True
+        elif prop == "lr" and isinstance(value, float):
+            self.learner.lr = value
+            changed = True
+        elif prop == "arch" and isinstance(value, str):
+            self.learner.arch = value
+            changed = True
+
+        if changed and (self.state == "TRAINED" or self.state == "IN_TRAINING"):
+            self.state = "DATASET"
+        self.save()
+        return changed
+
+    # The train method trains the model using the learner.
+    def train(self):
+        if self.state == "DATASET":
+            self.state = "IN_TRAINING"
+            self.learner.train()
+            if self.state == "IN_TRAINING":
+                self.state = "TRAINED"
+
+        elif self.state == "NEW":
+            return "Dataset not loaded yet. Load data to start training."
+        elif self.state == "TRAINED":
+            return "Model already trained."
+        self.save()
+
+    # The test method tests the model using the data of the dataset.
+    # The dataset must have a test set for this to work.
+    def test(self):
+        if self.state == "TRAINED" and self.loader.has_test():
+            self.learner.test()
+            self.save()
+            return self.learner.test_accuracy, self.learner.test_loss
+        elif self.state == "NEW":
+            return "Dataset not loaded yet. Load data to start testing."
+        elif self.state == "DATASET":
+            return "Model not trained yet. Train the model."
+        elif not self.loader.has_test():
+            return "The model doesn't have a test set."
+        else:
+            return "UNKNOWN STATE"
+        
+    # ------------------------------
+    # PREDICTION RELATED FUNCTIONS
+    # ------------------------------
+
+    # The interpret method returns the classification interpretation of the model.
+    # It uses the fastai library to analyze the model's predictions and losses.
+    def predict(self, img, prob_graph=False, cam=False, grad_cam=False):
+        if self.state == "TRAINED":
+            return self.learner.predict(img, prob_graph, cam, grad_cam, self.path)
+        else:
+            return "Model isn't ready to predict"
+
+    # The get_probabilities method returns the predicted probabilities for the classes of the model.
+    # plotted using a graph.
+    def get_probabilities(self, img):
+        if self.state == "TRAINED":
+            return self.learner.predict(img)[2]
+        else:
+            return "Model isn't ready to predict"
+
+    # The get_training_results method returns the training results of the model.
+    def get_training_results(self):
+        with open(os.path.join(self.path, RESULTS_FILE), 'r') as f:
+            return json.load(f)
+    
+    # The heatmap method returns the gradcam heatmap for a given image.
+    def heatmap(self, img, path):
+        if self.state == "TRAINED":
+            self.learner.create_heatmap(img, path)
+        else:
+            return "Model isn't ready to create heatmap"
+
+    # ----------------------------------
+    # REMOVE MODEL
+    # ----------------------------------
+
+    # The remove_model method removes the model's directory and deletes it from the global models dictionary.
     def remove_model(self):
         shutil.rmtree(self.path)
         models.pop(self.id)
 
+    # The remove_learner method removes the learner's files from the model's directory.
     def remove_learner(self):
         if os.path.exists(os.path.join(self.path, MODEL_FILENAME)):
             os.remove(os.path.join(self.path, MODEL_FILENAME))
@@ -292,12 +359,7 @@ class Model:
         self.learner = PretrainedLearner(self.loader, self.path)
         self.save()
     
-    def heatmap(self, img, path):
-        if self.state == "TRAINED":
-            self.learner.create_heatmap(img, path)
-        else:
-            return "Model isn't ready to create heatmap"
-
+    # The remove_dataset method removes the dataset files from the model's directory.
     def remove_dataset(self):
         if os.path.exists(os.path.join(MODELS_PATH, self.id, MODEL_FILENAME)):
             os.remove(os.path.join(MODELS_PATH, self.id, MODEL_FILENAME))

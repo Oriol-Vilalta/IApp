@@ -25,6 +25,7 @@ def get_dataset_by_id(id):
 
     dataset = Dataset(data['name'], id)
     dataset.has_test = data['has_test']
+    dataset.has_test_used_training_data = data['has_test_used_training_data']
     dataset.path = data['path']
     dataset.test_vocab = data['test_vocab']
     dataset.train_vocab = data['train_vocab']
@@ -155,6 +156,7 @@ class Dataset:
         self.id = id
         self.name = name
         self.has_test = False
+        self.has_test_used_training_data = False
         self.path = os.path.join(DATASET_PATH, self.id)
 
         self.train_vocab = []
@@ -173,7 +175,8 @@ class Dataset:
             "id": self.id,
             "train_vocab": self.train_vocab,
             "test_vocab": self.test_vocab,
-            "has_test": self.has_test
+            "has_test": self.has_test,
+            "has_test_used_training_data": self.has_test_used_training_data
         }
 
     def save(self):
@@ -224,6 +227,7 @@ class Dataset:
                 os.rename(os.path.join(train_path, label, image), os.path.join(test_path, label, image))
 
             self.has_test = True
+            self.has_test_used_training_data = True
             self.save()
 
     def delete_train(self):
@@ -238,6 +242,7 @@ class Dataset:
         shutil.rmtree(path)
         os.makedirs(path, exist_ok=True)
         self.train_vocab = []
+        self.has_test_used_training_data = False
         self.save()
 
     def remove_label(self, label):
@@ -251,6 +256,10 @@ class Dataset:
                 self.test_vocab.remove(dir)
                 shutil.rmtree(os.path.join(self.path, "test", dir))
 
+        if self.test_vocab == 0:
+            self.has_test_used_training_data = False
+            self.has_test = False
+        
         self.save()
 
     def remove_dataset(self):

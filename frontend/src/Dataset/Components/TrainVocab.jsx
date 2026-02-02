@@ -105,6 +105,7 @@ const TrainVocabList = ({ dataset }) => {
                     />
                 </div>
             </div>
+            {dataset.has_test_used_training_data && <p>Generated using training data</p>}
             <List>
                 {dataset.train_vocab.map((vocab, index) => (
                     <VocabElement label={vocab} id={dataset.id} vocabKey={index} key={index} mode={"train"}/>

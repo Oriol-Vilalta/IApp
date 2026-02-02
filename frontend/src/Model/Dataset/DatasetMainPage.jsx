@@ -129,11 +129,7 @@ const DatasetMainPage = ({ model, setHasTest }) => {
     };
 
     const handleApply = async () => {
-        if (pendingDatasetId && pendingDatasetId !== selectedDatasetId) {
-            await selectDataset(pendingDatasetId);
-        } else {
-            setConfirmationMsg("No changes to apply.");
-        }
+        await selectDataset(pendingDatasetId);
     };
 
     return (

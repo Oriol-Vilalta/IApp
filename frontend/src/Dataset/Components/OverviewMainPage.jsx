@@ -141,7 +141,11 @@ const Overview = ({ dataset }) => {
                     {renderVocabSection("Training Vocabulary", dataset.train_vocab, "train")}
                 </li>
                 <li>
-                    {renderVocabSection("Testing Vocabulary", dataset.test_vocab, "test")}
+                    {renderVocabSection(
+                        "Testing Vocabulary" + (dataset.has_test_used_training_data ? " (Generated using training data)" : ""),
+                        dataset.test_vocab,
+                        "test"
+                    )}
                 </li>
             </ul>
         </div>

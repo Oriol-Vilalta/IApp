@@ -1,9 +1,12 @@
+import torch
 from torchvision.models.resnet import resnet18, resnet34, resnet50, resnet101, resnet152
 from torchvision.models.densenet import densenet121, densenet161, densenet169, densenet201
 from torchvision.models.efficientnet import efficientnet_b0, efficientnet_b1, efficientnet_b2, efficientnet_b3, efficientnet_b4, efficientnet_b5, efficientnet_b6, efficientnet_b7
 from torchvision.models.vgg import vgg16, vgg19, vgg16_bn, vgg19_bn
 from torchvision.models.alexnet import alexnet
 from torchvision.models.googlenet import googlenet
+from fastai.torch_core import default_device, defaults
+from ..utils.logger import logger 
 
 from torch.nn.functional import cross_entropy
 
@@ -198,6 +201,23 @@ class PretrainedLearner:
     def train(self):
         self.learner = vision_learner(self.loader.to_dls(), arch_from_str(self.arch), metrics=[accuracy, error_rate])
 
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        try:
+            defaults.device = device
+        except Exception:
+            pass
+
+        try:
+            self.learner.dls.device = device
+        except Exception:
+            pass
+        try:
+            self.learner.to(device)
+        except Exception:
+            pass
+
+        self.learner.to_fp32()  
+   
         self.training_time = datetime.now()
         self.learner.fine_tune(self.epoch, base_lr=self.lr, cbs=[self.metrics_callback])
         self.training_time = str(datetime.now() - self.training_time)

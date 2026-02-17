@@ -1,4 +1,5 @@
 from fastai.interpret import ClassificationInterpretation
+from filelock import FileLock, Timeout
 
 
 from ..utils.logger import logger
@@ -19,6 +20,7 @@ from datetime import datetime
 # Constants
 RESULTS_FILE = "results.json"
 MODEL_FILENAME = "model.pkl"
+GLOBAL_LOCK = FileLock("/tmp/iapp_heavy_ops.lock")
 
 # models is a dictionary that holds all the models loaded in memory.
 # The key is the model ID and the value is the Model object.
@@ -273,33 +275,51 @@ class Model:
 
     # The train method trains the model using the learner.
     def train(self):
-        if self.state == "DATASET":
-            self.state = "IN_TRAINING"
-            self.learner.train()
-            if self.state == "IN_TRAINING":
-                self.state = "TRAINED"
+        try:
+            GLOBAL_LOCK.acquire(timeout=0)
+        except Timeout:
+            logger.warning(f"Train request rejected: server busy.")
+            return "Server busy: another heavy operation is running."
+        
+        try:
+            if self.state == "DATASET":
+                self.state = "IN_TRAINING"
+                self.learner.train()
+                if self.state == "IN_TRAINING":
+                    self.state = "TRAINED"
 
-        elif self.state == "NEW":
-            return "Dataset not loaded yet. Load data to start training."
-        elif self.state == "TRAINED":
-            return "Model already trained."
-        self.save()
+            elif self.state == "NEW":
+                return "Dataset not loaded yet. Load data to start training."
+            elif self.state == "TRAINED":
+                return "Model already trained."
+            self.save()
+        finally:
+            GLOBAL_LOCK.release()
 
     # The test method tests the model using the data of the dataset.
     # The dataset must have a test set for this to work.
     def test(self):
-        if self.state == "TRAINED" and self.loader.has_test():
-            self.learner.test()
-            self.save()
-            return self.learner.test_accuracy, self.learner.test_loss
-        elif self.state == "NEW":
-            return "Dataset not loaded yet. Load data to start testing."
-        elif self.state == "DATASET":
-            return "Model not trained yet. Train the model."
-        elif not self.loader.has_test():
-            return "The model doesn't have a test set."
-        else:
-            return "UNKNOWN STATE"
+        try:
+            GLOBAL_LOCK.acquire(timeout=0)
+        except Timeout:
+            logger.warning(f"Test request rejected: server busy.")
+            return 0, "Server busy: another heavy operation is running."
+        
+        try:
+            if self.state == "TRAINED" and self.loader.has_test():
+                self.learner.test()
+                self.save()
+                return 1, self.learner.test_accuracy, self.learner.test_loss
+            elif self.state == "NEW":
+                return 1, "Dataset not loaded yet. Load data to start testing."
+            elif self.state == "DATASET":
+                return 1, "Model not trained yet. Train the model."
+            elif not self.loader.has_test():
+                return 1, "The model doesn't have a test set."
+            else:
+                return 1, "UNKNOWN STATE"
+        finally:
+            GLOBAL_LOCK.release()
         
     # ------------------------------
     # PREDICTION RELATED FUNCTIONS
@@ -308,10 +328,20 @@ class Model:
     # The interpret method returns the classification interpretation of the model.
     # It uses the fastai library to analyze the model's predictions and losses.
     def predict(self, img, prob_graph=False, cam=False, grad_cam=False):
-        if self.state == "TRAINED":
-            return self.learner.predict(img, prob_graph, cam, grad_cam, self.path)
-        else:
-            return "Model isn't ready to predict"
+        try:
+            GLOBAL_LOCK.acquire(timeout=0)
+        except Timeout:
+            logger.warning(f"Predict request rejected: server busy.")
+            return "Server busy: another heavy operation is running."
+        
+        try:
+            if self.state == "TRAINED":
+                return self.learner.predict(img, prob_graph, cam, grad_cam, self.path)
+            else:
+                return "Model isn't ready to predict"
+        
+        finally:
+            GLOBAL_LOCK.release()
 
     # The get_probabilities method returns the predicted probabilities for the classes of the model.
     # plotted using a graph.

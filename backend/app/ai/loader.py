@@ -84,7 +84,10 @@ class Loader:
                 seed=self.seed,
                 valid_pct=self.valid_pct,
                 item_tfms=get_item_tfms(self.item_tfms),
-                bs=self.bs
+                bs=self.bs,
+                pin_memory=True,
+                persistent_workers=True,
+                num_workers=4
             )
             self.modified = False
         return self.dls

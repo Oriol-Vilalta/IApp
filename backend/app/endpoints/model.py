@@ -1,4 +1,6 @@
 from flask import Blueprint, jsonify, request, send_file, Response
+from functools import wraps
+from filelock import FileLock, Timeout
 from flask_cors import CORS
 from werkzeug.exceptions import BadRequestKeyError
 from fastai.vision.core import PILImage
@@ -9,6 +11,8 @@ from ..utils.logger import logger
 
 blueprint = Blueprint('models', __name__)
 CORS(blueprint)
+
+training_lock = FileLock(os.path.join("/tmp", "iapp_heavy_ops.lock"))
 
 #
 # CRUD OPERATIONS
@@ -23,6 +27,7 @@ def get_models():
 
 
 # GET - Retrieves the indormation of an specified model by its id.
+
 # Used on a specific model page
 @blueprint.route('/models/<string:id>', methods=['GET'])
 def get_model_with_id(id):
@@ -151,6 +156,7 @@ def train_a_model_(id):
         
 
 # TEST - Tests model using test data. Return message with accuracy and loss
+
 @blueprint.route('/models/<string:id>/test', methods=['PUT'])
 def test_a_model(id):
     model = get_model(id)
@@ -161,14 +167,18 @@ def test_a_model(id):
     
     # Test and return message with metrics
     res = model.test()
+    if res[0] == 0:
+        return jsonify({'error': res[1]}), 400
+    
     logger.debug(f"{request.path}: Model tested successfully.")
     return jsonify({'message': {
-        'accuracy': res[0],
-        'loss': res[1]
+        'accuracy': res[1],
+        'loss': res[2]
     }}), 200
 
 
 # PREDICT - Predict an image using the model.
+
 @blueprint.route('/models/<string:id>/predict', methods=['POST'])
 def predict_an_image(id):
     logger.info(f"{request.path}: Received prediction request for model {id}")
@@ -235,6 +245,7 @@ def predict_an_image(id):
 #
 
 # HEATMAP - Retrieves the heatmap
+
 @blueprint.route('/models/<string:id>/heatmap', methods=['GET'])
 def get_the_heatmap(id):
     model = get_model(id)
@@ -248,6 +259,7 @@ def get_the_heatmap(id):
 
 
 # DOWNLOAD HEATMAP - Download the heatmap image file
+
 @blueprint.route('/models/<string:id>/heatmap/download', methods=['GET'])
 def download_heatmap(id):
     model = get_model(id)
@@ -264,6 +276,7 @@ def download_heatmap(id):
         return jsonify({'error': 'Heatmap does not exist'}), 404
 
 # GRADCAM - Retrieves the gradcam
+
 @blueprint.route('/models/<string:id>/gradcam', methods=['GET'])
 def get_the_grad_cam(id):
     model = get_model(id)

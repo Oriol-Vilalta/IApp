@@ -17,7 +17,6 @@ CORS(blueprint)
 @blueprint.route('/datasets', methods=['GET'])
 def get_datasets():
     response = list(map(lambda dataset: dataset.to_dict(), list(datasets.values())))
-    logger.debug(f"{request.path}: Retrieved {len(response)} datasets")
     return jsonify({"datasets": response}), 200
 
 
@@ -27,7 +26,6 @@ def get_datasets():
 def get_dataset_with_id(id):
     dataset = get_dataset(id)
     if dataset:
-        logger.debug(f"{request.path}: Retreived dataset successfully.")
         return jsonify(dataset.to_dict()), 200
     else:
         logger.error(f"{request.path}: Dataset doesn't exist.")
@@ -41,7 +39,6 @@ def create_dataset_by_name():
     name = request.json['name']
     dataset = create_dataset(name)
     if dataset:
-        logger.debug(f"Dataset created successfully. ID: {dataset.id}")
         return jsonify(dataset.to_dict()), 201
     else:
         logger.error(f"There's already a dataset with this name.")
@@ -52,10 +49,8 @@ def create_dataset_by_name():
 @blueprint.route('/datasets/<string:id>', methods=['DELETE'])
 def delete_dataset_by_id(id):
     if delete_dataset(id):
-        logger.debug(f"{request.path}: {id} got deleted!")
         return jsonify({"message": "Dataset deleted successfully"}), 200
     else:
-        logger.debug(f"{request.path}: Dataset doesn't exist")
         return jsonify({"error": "Dataset not found"}), 404
 
 
@@ -82,7 +77,6 @@ def upload_train_data(id):
         return jsonify({"error": "File type not supported"}), 400
 
     if upload_train_label(id, file.stream):
-        logger.debug(f"{request.path}: Uploaded Train Data")
         return jsonify({"message": "Data uploaded successfully"}), 200
     else:
         logger.error(f"{request.path}: Uploaded Train Data")
@@ -108,7 +102,6 @@ def upload_test_data(id):
         return jsonify({"error": "File type not supported"}), 400
 
     if upload_test_label(id, file.stream):
-        logger.debug(f"{request.path}: Uploaded Test Data")
         return jsonify({"message": "Data uploaded successfully"}), 200
     else:
         return jsonify({"error": "Dataset not found"}), 404
@@ -134,7 +127,6 @@ def upload_dataset_full_dataset():
     if not file.filename.endswith('.zip'):
         return jsonify({"error": "File type not supported"}), 400
 
-    logger.debug(f"{request.path}: Uploaded dataset")
     upload_dataset(file)
     return jsonify({"message": "Data uploaded successfully"}), 200
 
@@ -146,7 +138,6 @@ def download_a_dataset(id):
     if dataset:
         response = Response(dataset.compress(), content_type='application/zip')
         response.headers['Content-Disposition'] = f'attachment; filename={dataset.name}.zip'
-        logger.debug(f"{request.path}: Dataset downloaded successfully")
         return response, 200
     else:
         logger.error(f"{request.path}: Dataset doesn't exist.")
@@ -160,7 +151,6 @@ def get_first_image(id, mode, label):
     dataset = get_dataset(id)
     if dataset:
         name = dataset.get_first_image_name(label, mode)
-        logger.debug(name)
         return send_file(name, mimetype='image/png')
     else:
         logger.error(f"{request.path}: Dataset doesn't exist.")
@@ -174,7 +164,6 @@ def get_first_image(id, mode, label):
 @blueprint.route('/datasets/<string:id>/delete/train', methods=['DELETE'])
 def delete_train_data_from_dataset(id):
     if delete_train(id):
-        logger.debug(f"{request.path}: Train data deleted successfully")
         return jsonify({"message": "Train data deleted successfully"}), 200
     else:
         logger.error(f"{request.path}: Dataset doesn't exist.")
@@ -185,7 +174,6 @@ def delete_train_data_from_dataset(id):
 @blueprint.route('/datasets/<string:id>/delete/test', methods=['DELETE'])
 def delete_test_data_from_dataset(id):
     if delete_test(id):
-        logger.debug(f"{request.path}: Test data deleted successfully")
         return jsonify({"message": "Test data deleted successfully"}), 200
     else:
         logger.error(f"{request.path}: Dataset doesn't exist.")
@@ -197,7 +185,6 @@ def delete_test_data_from_dataset(id):
 def update_train_data(id):
     label = request.args.get('name')
     if delete_label(id, label):
-        logger.debug("Label delated successfully")
         return jsonify({"message": f"{label} deleted successfully"}), 200
     else:
         logger.error(f"{request.path}: Dataset doesn't exist.")

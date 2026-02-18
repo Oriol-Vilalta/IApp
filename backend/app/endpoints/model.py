@@ -22,7 +22,6 @@ training_lock = FileLock(os.path.join("/tmp", "iapp_heavy_ops.lock"))
 @blueprint.route('/models', methods=['GET'])
 def get_models():
     response = list(map(lambda model: model.to_dict(), list(models.values())))
-    logger.debug(f"{request.path}: Retrieved {len(response)} models")
     return jsonify({'models': response}), 200
 
 
@@ -33,7 +32,6 @@ def get_models():
 def get_model_with_id(id):
     model = get_model(id)
     if model:
-        logger.debug(f"{request.path}: Retrieved model successfully.")
         return jsonify(model.to_dict()), 200
     else:
         logger.error(f"{request.path}: Dataset doesn't exist.")
@@ -47,7 +45,6 @@ def create_model_by_name():
     name = request.json['name']
     model = create_model(name)
     if model:
-        logger.debug(f"Model creates successfully. ID: {model.id}")
         return jsonify(model.to_dict()), 201
     else:
         logger.error(f"There's already a model with this name.")
@@ -60,7 +57,6 @@ def delete_model_by_id(id):
     model = get_model(id)
     if model:
         model.remove_model()
-        logger.debug(f"{request.path}: {id} got deleted!")
         return jsonify({'message': 'Model deleted successfully'}), 200
     else:
         logger.error(f"{request.path}: Model doesn't exist")
@@ -87,7 +83,6 @@ def upload_new_model():
     if not file.filename.endswith('.zip'):
         return jsonify({"eror": "File type not supported"}), 400
 
-    logger.debug(f"{request.path}: Uploaded model")
     upload_model(file)
     return jsonify({"message": "Data uploaded successfully"}), 200
 
@@ -99,7 +94,6 @@ def download_by_id(id):
     if model:
         response = Response(model.compress(), content_type='application/zip')
         response.headers['Content-Disposition'] = f'attachment; filename="{model.name}.zip"'
-        logger.debug(f"{request.path}: Model downloaded successfully.")
         return response, 200
     else:
         logger.error(f"{request.path}: Model doesn't exist.")
@@ -118,7 +112,6 @@ def assign_a_dataset_to_a_model(id):
         return jsonify({'error': 'Model does not exist'}), 404
     
     if model.assign_dataset(request.json['dataset']):
-        logger.debug(f"{request.path}: Dataset assigned successfully.")
         return jsonify({'message': 'Dataset assigned successfully'}), 200
     else:
         logger.error(f"{request.path}: Dataset doesn't exist.")
@@ -140,7 +133,6 @@ def train_a_model_(id):
         return jsonify({"error": "Model doesn't exist"}), 404
     
     # Train model
-    logger.debug(f"{request.path}: Starting training...")
     try:
         response = model.train()
     except MemoryError as e:
@@ -148,7 +140,6 @@ def train_a_model_(id):
     
     # Send response if needed, if not send success message
     if not response:
-        logger.debug(f"{request.path}: Model trainend successfully.")
         return jsonify({'message': "Trained correctly"}), 200
     else:
         logger.error(f"{request.path}: {response}")
@@ -170,7 +161,6 @@ def test_a_model(id):
     if res[0] == 0:
         return jsonify({'error': res[1]}), 400
     
-    logger.debug(f"{request.path}: Model tested successfully.")
     return jsonify({'message': {
         'accuracy': res[1],
         'loss': res[2]
@@ -235,7 +225,6 @@ def predict_an_image(id):
     logger.info(f"{request.path}: Starting prediction (grad_cam={grad_cam}, prob_graph={prob_graph})")
     res = model.predict(img, grad_cam=grad_cam, prob_graph=prob_graph)
     logger.info(f"{request.path}: Prediction done for model {id}")
-    logger.debug(f"{request.path}: Prediction result: {res}")
 
     return jsonify({'result': res}), 200
 
@@ -250,7 +239,6 @@ def predict_an_image(id):
 def get_the_heatmap(id):
     model = get_model(id)
     if model:
-        logger.debug(f"{request.path}: Heatmap sended successfully!")
         model.heatmap(PILImage.create(os.path.join(model.path, "predict.jpg")), model.path)
         return send_file(os.path.join(model.path, "heatmap.png"), mimetype='image/png')
     else:
@@ -269,7 +257,6 @@ def download_heatmap(id):
 
     heatmap_path = os.path.join(model.path, "heatmap.png")
     if os.path.exists(heatmap_path):
-        logger.debug(f"{request.path}: Heatmap downloaded successfully.")
         return send_file(heatmap_path, mimetype='image/png', as_attachment=True, download_name='heatmap.png')
     else:
         logger.error(f"{request.path}: Heatmap does not exist.")
@@ -285,7 +272,6 @@ def get_the_grad_cam(id):
         return jsonify({'error': 'Model does not exist'}), 404
     
     if os.path.exists(os.path.join(model.path, "grad-cam.png")):
-        logger.debug(f"")
         return send_file(os.path.join(model.path, "grad-cam.png"), mimetype='image/png')
     else:
         logger.warning(f"{request.path}: Grad-cam might not be ready.")
@@ -302,7 +288,6 @@ def get_training_results(id):
     model = get_model(id)
     if model:
         res = model.get_training_results()
-        logger.debug(f"{request.path}: Training results retrieved successfully.")
         return jsonify({'result': res}), 200
     else:
         logger.error(f"{request.path}: Model doesn't exist.")
@@ -314,7 +299,6 @@ def get_training_results(id):
 def get_the_prob_graph(id):
     model = get_model(id)
     if model:
-        logger.debug(f"{request.path}: Graphic of results retrieved successfully.")
         return send_file(os.path.join(model.path, "prob_graph.png"), mimetype='image/png')
     else:
         logger.error(f"{request.path}: Model doesn't exist.")

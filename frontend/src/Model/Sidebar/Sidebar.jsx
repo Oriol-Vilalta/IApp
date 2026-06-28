@@ -5,10 +5,13 @@ const Sidebar = ({ setMode, state, mode }) => {
         { label: "Overview" },
         { label: "Dataset" },
         { label: "Train" },
+        { label: "Test" },
+        { label: "Predict" }
     ];
 
-    if (state === "TRAINED") {
-        buttons.push({ label: "Test" }, { label: "Predict" });
+    const disabledWhenNotTrained = (label) => {
+        if (state === "TRAINED") return false;
+        return label === "Test" || label === "Predict";
     }
 
     return (
@@ -23,6 +26,7 @@ const Sidebar = ({ setMode, state, mode }) => {
                         label={label}
                         setMode={setMode}
                         isActive={mode === label}
+                        disabled={disabledWhenNotTrained(label)}
                     />
                 ))}
             </ul>

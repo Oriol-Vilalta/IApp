@@ -247,7 +247,7 @@ class PretrainedLearner:
 
     # The load method loads the learner from the specified path if it exists.
     def load(self):
-        if not self.learner and self.learner_exists:
+        if self.learner is None and self.learner_exists:
             self.learner = load_learner(self.path)
 
     # The remove_learner method deletes the learner file from the specified path and sets the learner to None.
@@ -273,7 +273,8 @@ class PretrainedLearner:
     
     # The create_heatmap method generates a heatmap for the given image using the grad_cam function.
     def create_heatmap(self, img, path):
-        grad_cam(self.learner, img, self.loader.to_dls(), path)
+        self.load()
+        grad_cam(self.learner, img, self.loader.to_dls(), path, filename="heatmap.png")
 
     # The get_training_time method returns the training time as a string.
     def get_training_time(self):

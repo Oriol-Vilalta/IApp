@@ -311,13 +311,13 @@ class Model:
                 self.save()
                 return 1, self.learner.test_accuracy, self.learner.test_loss
             elif self.state == "NEW":
-                return 1, "Dataset not loaded yet. Load data to start testing."
+                return 0, "Dataset not loaded yet. Load data to start testing."
             elif self.state == "DATASET":
-                return 1, "Model not trained yet. Train the model."
+                return 0, "Model not trained yet. Train the model."
             elif not self.loader.has_test():
-                return 1, "The model doesn't have a test set."
+                return 0, "The model doesn't have a test set."
             else:
-                return 1, "UNKNOWN STATE"
+                return 0, "UNKNOWN STATE"
         finally:
             GLOBAL_LOCK.release()
         

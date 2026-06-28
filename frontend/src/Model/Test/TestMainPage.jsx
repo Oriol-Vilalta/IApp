@@ -11,6 +11,7 @@ const TestMainPage = ({ model, fetchModel }) => {
     const [loading, setLoading] = useState(false);
 
     const runTests = async () => {
+        console.log(model);
         setLoading(true);
         const url = "http://127.0.0.1:5000/models/" + model.id + "/test";
         const res = await fetch(url, {
@@ -21,7 +22,14 @@ const TestMainPage = ({ model, fetchModel }) => {
             }
         });
 
-        await res.json();
+        const data = await res.json();
+
+        if (data && data.error) {
+            alert(data.error);
+        } else if (Array.isArray(data) && data[0] === 0 && data[1] === "Server busy: another heavy operation is running.") {
+            // legacy array-style error response
+            alert(data[1]);
+        }
         setLoading(false);
         fetchModel(); 
     };

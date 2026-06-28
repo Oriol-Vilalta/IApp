@@ -3,6 +3,10 @@
     by Jeremy Howard and Sylvain Gugger.
 """
 import os
+import matplotlib
+
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 import torch
 from fastai.torch_basics import TensorImage
@@ -67,63 +71,69 @@ def heatmap_cam(learner, img, dls, path):
         return None
 
     x_dec = TensorImage(dls.train.decode((x.cpu(),))[0][0])
-    _, ax = plt.subplots()
+    fig, ax = plt.subplots()
     x_dec.show(ctx=ax)
     ax.imshow(cam_map[1].detach().cpu(), alpha=0.6, extent=(0, 224, 224, 0), interpolation='bilinear', cmap='magma')
 
     hook.remove()
 
-    plt.savefig(os.path.join(path, "heatmap.webp"))
-    plt.close()
+    fig.savefig(os.path.join(path, "heatmap.webp"))
+    plt.close(fig)
 
 
 
 # grad_cam generates a Grad-CAM heatmap for a given image and model.
 # It uses hooks to capture activations and gradients from the target layer during forward and backward passes.
 # The resulting heatmap highlights regions in the image that are important for the model's prediction.
-def grad_cam(learner, img, dls, path):
+def grad_cam(learner, img, dls, path, filename="grad-cam.png"):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Generating CAM heatmap on device: {device}")
 
+    original_device = next(learner.model.parameters()).device
     learner.model.to(device)
     learner.model.eval()
     learner.model.zero_grad(set_to_none=True)
+    fig = None
 
-    x, = first(dls.test_dl([img]))
-    x = x.to(device)
+    try:
+        x, = first(dls.test_dl([img]))
+        x = x.to(device)
 
-    cls = 1  # target class index
+        cls = 1  # target class index
 
-    with torch.enable_grad():
-        with HookBwd(learner.model[0]) as hookg:
-            with Hook(learner.model[0]) as hook:
-                output = learner.model.eval()(x.to(device))
-                act = hook.stored
+        with torch.enable_grad():
+            with HookBwd(learner.model[0]) as hookg:
+                with Hook(learner.model[0]) as hook:
+                    output = learner.model.eval()(x.to(device))
+                    act = hook.stored
 
-            output[0, cls].backward()
-            grad = hookg.stored
+                output[0, cls].backward()
+                grad = hookg.stored
 
-    # Grad-CAM computation
-    w = grad[0].mean(dim=(1, 2), keepdim=True)
-    cam_map = (w * act[0]).sum(0)
-    cam_map = torch.relu(cam_map)
+        # Grad-CAM computation
+        w = grad[0].mean(dim=(1, 2), keepdim=True)
+        cam_map = (w * act[0]).sum(0)
+        cam_map = torch.relu(cam_map)
 
-    # Visualization
-    _, ax = plt.subplots()
+        # Visualization
+        fig, ax = plt.subplots()
 
-    x_dec = TensorImage(dls.train.decode((x.cpu(),))[0][0])
-    x_dec.show(ctx=ax)
+        x_dec = TensorImage(dls.train.decode((x.cpu(),))[0][0])
+        x_dec.show(ctx=ax)
 
-    ax.imshow(
-        cam_map.detach().cpu(),
-        alpha=0.6,
-        extent=(0, 224, 224, 0),
-        interpolation='bilinear',
-        cmap='magma'
-    )
+        ax.imshow(
+            cam_map.detach().cpu(),
+            alpha=0.6,
+            extent=(0, 224, 224, 0),
+            interpolation='bilinear',
+            cmap='magma'
+        )
 
-    plt.savefig(os.path.join(path, "grad-cam.png"))
-    plt.close()
+        fig.savefig(os.path.join(path, filename))
+    finally:
+        if fig is not None:
+            plt.close(fig)
+        learner.model.to(original_device)
 
 # -------------------
 # PROBABILITY GRAPH
@@ -131,7 +141,7 @@ def grad_cam(learner, img, dls, path):
 
 # It is called probability graph to the distribution of the probabilities of the classes on a prediction.
 def get_prob_graph(probs, vocab, path):
-    plt.figure(figsize=(7, 4))
+    fig = plt.figure(figsize=(7, 4))
     plt.barh(vocab, probs, color='skyblue')
     plt.xlabel('Probability')
     plt.title('Predicted Probabilities')
@@ -142,4 +152,5 @@ def get_prob_graph(probs, vocab, path):
     for index in range(len(vocab)):
         data[vocab[index]] = probs[index]
 
-    plt.savefig(os.path.join(path, "prob_graph"))
+    fig.savefig(os.path.join(path, "prob_graph"))
+    plt.close(fig)

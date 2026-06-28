@@ -7,6 +7,7 @@ import Button from "@mui/material/Button";
 const TrainMainPage = ({ model, fetchModel }) => {
     const [datasetConfig, setDatasetConfig] = useState(model.loader);
     const [learnerConfig, setLearnerConfig] = useState(model.learner);
+    const [disabledButtons, setDisabledButtons] = useState(false);
     const [configSaved, setConfigSaved] = useState(false);
 
     const saveAllConfigs = async () => {
@@ -69,12 +70,15 @@ const TrainMainPage = ({ model, fetchModel }) => {
 
     const train = async () => {
         try {
+
+            setDisabledButtons(true);
             const response = await fetch("http://127.0.0.1:5000/models/" + model.id + "/train", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
             });
+            setDisabledButtons(false);
 
             if (!response.ok) {
                 throw new Error("Failed to train");
@@ -124,7 +128,7 @@ const TrainMainPage = ({ model, fetchModel }) => {
                     variant="contained"
                     color="success"
                     onClick={saveAllConfigs}
-                    disabled={model.state === "IN_TRAINING"}
+                    disabled={model.state === "IN_TRAINING" || disabledButtons}
                     style={{
                         padding: "0.75rem 2rem",
                         fontSize: "1rem",
@@ -135,8 +139,8 @@ const TrainMainPage = ({ model, fetchModel }) => {
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={startTrainingRoutine}
-                    disabled={model.state === "IN_TRAINING"}
+                    onClick={startTrainingRoutine} 
+                    disabled={model.state === "IN_TRAINING" || disabledButtons}
                     style={{
                         padding: "0.75rem 2rem",
                         fontSize: "1rem",

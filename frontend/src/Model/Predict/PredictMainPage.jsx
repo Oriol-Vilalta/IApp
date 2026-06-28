@@ -1,6 +1,6 @@
 import "../MainPage.css";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -15,6 +15,10 @@ const PredictMainPage = ({ model }) => {
     const [predictionResult, setPredictionResult] = useState(null);
     const [showGradCam, setShowGradCam] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+
+    });
 
     const handleFileChange = e => {
         const file = e.target.files[0];
@@ -72,9 +76,17 @@ const PredictMainPage = ({ model }) => {
 
             if(response.status === 200) {
                 const data = await response.json();
-                setPredictionResult(data.result);
-                setGraphKey(Date.now());
-                setShowGradCam(false); // <-- Reset GradCAM button after each prediction
+                console.log(data.result);
+                if(data.result !== "Server busy: another heavy operation is running.")
+                {
+                    setPredictionResult(data.result);
+                    setGraphKey(Date.now());
+                    setShowGradCam(false); // <-- Reset GradCAM button after each prediction
+                }
+                else
+                {
+                    alert(data.result);
+                }
             } else {
                 alert("Prediction failed. Please try again. Status: " + (await response.json())['error']);
             }
